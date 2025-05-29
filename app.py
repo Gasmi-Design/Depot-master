@@ -16,47 +16,49 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- وظائف مساعدة للغة العربية ---
-def arabic_text(text):
-    reshaped_text = arabic_reshaper.reshape(text)
-    return get_display(reshaped_text)
-
-# --- أنماط CSS مخصصة ---
+# --- تحميل الخطوط والأنماط CSS ---
 def load_css():
-    st.markdown(f"""
+    st.markdown("""
     <style>
-        body {{
-            direction: rtl;
-            font-family: 'Arial', sans-serif;
-        }}
-        .main {{
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal&display=swap');
+        
+        .arabic-ui {
+            font-family: 'Tajawal', 'Arial', sans-serif !important;
+            direction: rtl !important;
+            text-align: right !important;
+        }
+        
+        body {
+            font-family: 'Tajawal', 'Arial', sans-serif;
+        }
+        .main {
             background-color: #f8f9fa;
             padding: 2rem;
             border-radius: 15px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-        }}
-        .header {{
+        }
+        .header {
             background: linear-gradient(135deg, #2c3e50, #3498db);
             color: white;
             padding: 2rem;
             border-radius: 15px;
             margin-bottom: 2rem;
             text-align: center;
-        }}
-        .sidebar .sidebar-content {{
+        }
+        .sidebar .sidebar-content {
             background: linear-gradient(180deg, #2c3e50, #34495e);
             color: white;
             padding: 1rem;
-        }}
-        .card {{
+        }
+        .card {
             background: white;
             border-radius: 10px;
             padding: 1.5rem;
             margin-bottom: 1rem;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             border-right: 5px solid #3498db;
-        }}
-        .stButton>button {{
+        }
+        .stButton>button {
             width: 100%;
             background: linear-gradient(135deg, #3498db, #2980b9);
             color: white;
@@ -65,36 +67,36 @@ def load_css():
             border-radius: 8px;
             font-size: 1rem;
             transition: all 0.3s;
-        }}
-        .stButton>button:hover {{
+        }
+        .stButton>button:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }}
-        .success-msg {{
+        }
+        .success-msg {
             background-color: #d4edda;
             color: #155724;
             padding: 1rem;
             border-radius: 8px;
             margin: 1rem 0;
             border-right: 5px solid #28a745;
-        }}
-        .error-msg {{
+        }
+        .error-msg {
             background-color: #f8d7da;
             color: #721c24;
             padding: 1rem;
             border-radius: 8px;
             margin: 1rem 0;
             border-right: 5px solid #dc3545;
-        }}
-        .info-msg {{
+        }
+        .info-msg {
             background-color: #d1ecf1;
             color: #0c5460;
             padding: 1rem;
             border-radius: 8px;
             margin: 1rem 0;
             border-right: 5px solid #17a2b8;
-        }}
-        .metric-card {{
+        }
+        .metric-card {
             background: white;
             border-radius: 10px;
             padding: 1.5rem;
@@ -102,16 +104,32 @@ def load_css():
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             margin: 0.5rem;
             border-top: 4px solid #3498db;
-        }}
-        @media (max-width: 768px) {{
-            .header h1 {{
+        }
+        input, textarea, select {
+            text-align: right !important;
+            direction: rtl !important;
+        }
+        @media (max-width: 768px) {
+            .header h1 {
                 font-size: 1.5rem;
-            }}
-        }}
+            }
+        }
     </style>
     """, unsafe_allow_html=True)
 
 load_css()
+
+# --- وظائف مساعدة للغة العربية ---
+def arabic_text(text):
+    if not text or not isinstance(text, str):
+        return text
+    try:
+        reshaped_text = arabic_reshaper.reshape(text)
+        bidi_text = get_display(reshaped_text)
+        return bidi_text
+    except Exception as e:
+        print(f"Error in arabic_text: {e}")
+        return text
 
 # --- تهيئة قاعدة البيانات ---
 def init_db():
@@ -144,6 +162,9 @@ PASSWORDS = {
     "مسؤول": hash_password("admin123")
 }
 
+# قائمة الأقسام
+sections = ["العلوم البيولوجية", "العلوم الفلاحية", "علوم التغذية", "علم البيئة والمحيط"]
+
 # --- إدارة الجلسة ---
 def reset_session():
     keys = list(st.session_state.keys())
@@ -154,13 +175,13 @@ def reset_session():
 def main():
     # --- الشريط الجانبي ---
     with st.sidebar:
-        st.markdown(f"<div style='text-align:center; margin-bottom:2rem;'>"
+        st.markdown(f"<div class='arabic-ui' style='text-align:center; margin-bottom:2rem;'>"
                     f"<h2>{arabic_text('منصة إيداع المذكرات')}</h2>"
                     f"<hr style='border-top:2px solid #3498db;'>"
                     f"</div>", unsafe_allow_html=True)
         
         if st.session_state.get("logged_in"):
-            st.markdown(f"<div class='card'>{arabic_text('مرحباً بك، ')} "
+            st.markdown(f"<div class='card arabic-ui'>{arabic_text('مرحباً بك، ')} "
                        f"<strong>{arabic_text(st.session_state.role)}</strong></div>", 
                        unsafe_allow_html=True)
             
@@ -168,7 +189,7 @@ def main():
                 reset_session()
                 st.experimental_rerun()
         else:
-            st.markdown(arabic_text("### تسجيل الدخول"))
+            st.markdown(f"<div class='arabic-ui'>{arabic_text('### تسجيل الدخول')}</div>", unsafe_allow_html=True)
             role = st.selectbox(arabic_text("نوع المستخدم"), ["طالب", "مشرف", "مسؤول"])
             password = st.text_input(arabic_text("كلمة المرور"), type="password")
             
@@ -192,7 +213,7 @@ def main():
 # --- صفحات التطبيق ---
 def show_login_page():
     st.markdown(f"""
-    <div class="header">
+    <div class="header arabic-ui">
         <h1>{arabic_text('منصة إيداع مذكرات التخرج')}</h1>
         <h3>{arabic_text('جامعة محمد البشير الإبراهيمي - برج بوعريريج')}</h3>
     </div>
@@ -201,7 +222,7 @@ def show_login_page():
     col1, col2, col3 = st.columns([1,2,1])
     with col2:
         st.markdown(f"""
-        <div class="card" style="text-align:center;">
+        <div class="card arabic-ui" style="text-align:center;">
             <h3>{arabic_text('مرحباً بكم في المنصة')}</h3>
             <p>{arabic_text('لإيداع مذكرات الترجح، يرجى تسجيل الدخول باستخدام بياناتكم من الشريط الجانبي')}</p>
             <img src="https://via.placeholder.com/300x200?text=University+Logo" width="100%">
@@ -209,11 +230,11 @@ def show_login_page():
         """, unsafe_allow_html=True)
 
 def show_student_page():
-    st.markdown(f"<div class='header'><h1>{arabic_text('نموذج إيداع مذكرة التخرج')}</h1></div>", 
+    st.markdown(f"<div class='header arabic-ui'><h1>{arabic_text('نموذج إيداع مذكرة التخرج')}</h1></div>", 
                 unsafe_allow_html=True)
     
     with st.form("student_form", clear_on_submit=True):
-        st.markdown(f"<div class='card'>{arabic_text('المعلومات الشخصية')}</div>", 
+        st.markdown(f"<div class='card arabic-ui'>{arabic_text('المعلومات الشخصية')}</div>", 
                    unsafe_allow_html=True)
         
         col1, col2 = st.columns(2)
@@ -224,12 +245,10 @@ def show_student_page():
                                       max_value=datetime.now())
         with col2:
             last_name = st.text_input(arabic_text("اللقب *"))
-            section = st.selectbox(arabic_text("القسم *"), 
-                                 ["العلوم البيولوجية", "العلوم الفلاحية", 
-                                  "علوم التغذية", "علم البيئة والمحيط"])
+            section = st.selectbox(arabic_text("القسم *"), sections)
             supervisor = st.text_input(arabic_text("اسم المشرف *"))
         
-        st.markdown(f"<div class='card'>{arabic_text('معلومات المذكرة')}</div>", 
+        st.markdown(f"<div class='card arabic-ui'>{arabic_text('معلومات المذكرة')}</div>", 
                    unsafe_allow_html=True)
         
         title = st.text_input(arabic_text("عنوان المذكرة *"))
@@ -237,7 +256,7 @@ def show_student_page():
                                type=["pdf"])
         
         st.markdown(f"""
-        <div class="info-msg">
+        <div class="info-msg arabic-ui">
             <h4>{arabic_text('شروط الإيداع')}</h4>
             <ul>
                 <li>{arabic_text('يجب أن يكون الملف بصيغة PDF')}</li>
@@ -251,7 +270,7 @@ def show_student_page():
             if all([reg_num, first_name, last_name, section, supervisor, title, file]):
                 if file.size > 10 * 1024 * 1024:  # 10MB حد أقصى
                     st.markdown(f"""
-                    <div class="error-msg">
+                    <div class="error-msg arabic-ui">
                         <h4>{arabic_text('خطأ في الإيداع')}</h4>
                         <p>{arabic_text('حجم الملف كبير جداً (الحد الأقصى 10MB)')}</p>
                     </div>
@@ -280,14 +299,14 @@ def show_student_page():
                     conn.close()
                     
                     st.markdown(f"""
-                    <div class="success-msg">
+                    <div class="success-msg arabic-ui">
                         <h4>{arabic_text('تم الإيداع بنجاح')}</h4>
                         <p>{arabic_text('شكراً لك، تم إيداع مذكرتك بنجاح وسيتم مراجعتها من قبل المشرف')}</p>
                     </div>
                     """, unsafe_allow_html=True)
             else:
                 st.markdown(f"""
-                <div class="error-msg">
+                <div class="error-msg arabic-ui">
                     <h4>{arabic_text('خطأ في الإيداع')}</h4>
                     <p>{arabic_text('الرجاء تعبئة جميع الحقول المطلوبة ورفع ملف المذكرة')}</p>
                 </div>
@@ -295,22 +314,28 @@ def show_student_page():
     
     # دليل الإيداع
     with st.expander(arabic_text("🛈 دليل إيداع المذكرات")):
-        st.markdown(arabic_text("""
-        **خطوات إيداع مذكرة التخرج:**
-        1. قم بتعبئة جميع حقول النموذج
-        2. تأكد من صحة المعلومات المدخلة
-        3. اختر ملف المذكرة بصيغة PDF
-        4. اضغط على زر "إيداع المذكرة"
-        5. ستصلك رسالة تأكيد بنجاح الإيداع
-        
-        **ملاحظات مهمة:**
-        - لا يمكن تعديل المذكرة بعد الإيداع
-        - سيتم إعلامك عند مراجعة المذكرة من قبل المشرف
-        - يمكنك التواصل مع الدعم الفني عند وجود أي مشكلة
-        """))
+        st.markdown(f"""
+        <div class="arabic-ui">
+            <h4>{arabic_text('خطوات إيداع مذكرة التخرج:')}</h4>
+            <ol>
+                <li>{arabic_text('قم بتعبئة جميع حقول النموذج')}</li>
+                <li>{arabic_text('تأكد من صحة المعلومات المدخلة')}</li>
+                <li>{arabic_text('اختر ملف المذكرة بصيغة PDF')}</li>
+                <li>{arabic_text('اضغط على زر "إيداع المذكرة"')}</li>
+                <li>{arabic_text('ستصلك رسالة تأكيد بنجاح الإيداع')}</li>
+            </ol>
+            
+            <h4>{arabic_text('ملاحظات مهمة:')}</h4>
+            <ul>
+                <li>{arabic_text('لا يمكن تعديل المذكرة بعد الإيداع')}</li>
+                <li>{arabic_text('سيتم إعلامك عند مراجعة المذكرة من قبل المشرف')}</li>
+                <li>{arabic_text('يمكنك التواصل مع الدعم الفني عند وجود أي مشكلة')}</li>
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
 
 def show_admin_page():
-    st.markdown(f"<div class='header'><h1>{arabic_text('لوحة التحكم - المشرفين')}</h1></div>", 
+    st.markdown(f"<div class='header arabic-ui'><h1>{arabic_text('لوحة التحكم - المشرفين')}</h1></div>", 
                 unsafe_allow_html=True)
     
     conn = sqlite3.connect('theses.db')
@@ -318,34 +343,34 @@ def show_admin_page():
     conn.close()
     
     # --- إحصائيات سريعة ---
-    st.markdown(f"<div class='card'>{arabic_text('الإحصائيات')}</div>", 
+    st.markdown(f"<div class='card arabic-ui'>{arabic_text('الإحصائيات')}</div>", 
                unsafe_allow_html=True)
     
     col1, col2, col3 = st.columns(3)
     with col1:
         st.markdown(f"""
-        <div class="metric-card">
+        <div class="metric-card arabic-ui">
             <h3>{len(df)}</h3>
             <p>{arabic_text('عدد المذكرات')}</p>
         </div>
         """, unsafe_allow_html=True)
     with col2:
         st.markdown(f"""
-        <div class="metric-card">
+        <div class="metric-card arabic-ui">
             <h3>{df['section'].nunique()}</h3>
             <p>{arabic_text('عدد الأقسام')}</p>
         </div>
         """, unsafe_allow_html=True)
     with col3:
         st.markdown(f"""
-        <div class="metric-card">
+        <div class="metric-card arabic-ui">
             <h3>{df['supervisor'].nunique()}</h3>
             <p>{arabic_text('عدد المشرفين')}</p>
         </div>
         """, unsafe_allow_html=True)
     
     # --- تصفية البيانات ---
-    st.markdown(f"<div class='card'>{arabic_text('تصفية المذكرات')}</div>", 
+    st.markdown(f"<div class='card arabic-ui'>{arabic_text('تصفية المذكرات')}</div>", 
                unsafe_allow_html=True)
     
     col1, col2, col3 = st.columns(3)
@@ -368,12 +393,12 @@ def show_admin_page():
         filtered_df = filtered_df[filtered_df["status"] == selected_status]
     
     # --- عرض المذكرات ---
-    st.markdown(f"<div class='card'>{arabic_text('المذكرات المقدمة')}</div>", 
+    st.markdown(f"<div class='card arabic-ui'>{arabic_text('المذكرات المقدمة')}</div>", 
                unsafe_allow_html=True)
     
     if filtered_df.empty:
         st.markdown(f"""
-        <div class="info-msg">
+        <div class="info-msg arabic-ui">
             <p>{arabic_text('لا توجد مذكرات لعرضها حسب التصفية المحددة')}</p>
         </div>
         """, unsafe_allow_html=True)
@@ -382,13 +407,13 @@ def show_admin_page():
             with st.expander(f"{row['title']} - {row['status']}"):
                 col1, col2 = st.columns(2)
                 with col1:
-                    st.markdown(f"**{arabic_text('الطالب')}:** {row['first_name']} {row['last_name']}")
-                    st.markdown(f"**{arabic_text('رقم التسجيل')}:** {row['reg_num']}")
-                    st.markdown(f"**{arabic_text('تاريخ الميلاد')}:** {row['birth_date']}")
+                    st.markdown(f"<div class='arabic-ui'><strong>{arabic_text('الطالب')}:</strong> {row['first_name']} {row['last_name']}</div>", unsafe_allow_html=True)
+                    st.markdown(f"<div class='arabic-ui'><strong>{arabic_text('رقم التسجيل')}:</strong> {row['reg_num']}</div>", unsafe_allow_html=True)
+                    st.markdown(f"<div class='arabic-ui'><strong>{arabic_text('تاريخ الميلاد')}:</strong> {row['birth_date']}</div>", unsafe_allow_html=True)
                 with col2:
-                    st.markdown(f"**{arabic_text('القسم')}:** {row['section']}")
-                    st.markdown(f"**{arabic_text('المشرف')}:** {row['supervisor']}")
-                    st.markdown(f"**{arabic_text('تاريخ الإيداع')}:** {row['upload_date']}")
+                    st.markdown(f"<div class='arabic-ui'><strong>{arabic_text('القسم')}:</strong> {row['section']}</div>", unsafe_allow_html=True)
+                    st.markdown(f"<div class='arabic-ui'><strong>{arabic_text('المشرف')}:</strong> {row['supervisor']}</div>", unsafe_allow_html=True)
+                    st.markdown(f"<div class='arabic-ui'><strong>{arabic_text('تاريخ الإيداع')}:</strong> {row['upload_date']}</div>", unsafe_allow_html=True)
                 
                 # حالة المذكرة (للمشرفين فقط)
                 if st.session_state.role in ["مشرف", "مسؤول"]:
@@ -420,14 +445,14 @@ def show_admin_page():
                     )
                 else:
                     st.markdown(f"""
-                    <div class="error-msg">
+                    <div class="error-msg arabic-ui">
                         <p>{arabic_text('ملف المذكرة غير موجود!')}</p>
                     </div>
                     """, unsafe_allow_html=True)
     
     # --- أدوات الإدارة للمسؤولين ---
     if st.session_state.role == "مسؤول":
-        st.markdown(f"<div class='card'>{arabic_text('أدوات الإدارة')}</div>", 
+        st.markdown(f"<div class='card arabic-ui'>{arabic_text('أدوات الإدارة')}</div>", 
                    unsafe_allow_html=True)
         
         try:
@@ -470,7 +495,7 @@ def show_admin_page():
 
     # --- تذييل الصفحة ---
     st.markdown(f"""
-    <div style="text-align: center; margin-top: 2rem; color: #666; font-size: 0.9rem;">
+    <div class="arabic-ui" style="text-align: center; margin-top: 2rem; color: #666; font-size: 0.9rem;">
         <hr>
         <p>{arabic_text('منصة إيداع مذكرات التخرج - كلية علوم الطبيعة و الحياة وعلوم الأرض والكون © 2025')}</p>
         <p>{arabic_text('للإبلاغ عن مشاكل تقنية يرجى التواصل على: fsnv@univ-bba.dz')}</p>
