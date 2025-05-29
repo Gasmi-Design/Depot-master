@@ -407,7 +407,7 @@ with st.container():
     st.markdown("""
     <div style="text-align: center; margin-top: 2rem; color: #666; font-size: 0.9rem;">
         <hr>
-        <p>منصة إيداع مذكرات التخرج - جامعة محمد البشير الإبراهيمي © 2023</p>
-        <p>للإبلاغ عن مشاكل تقنية يرجى التواصل على: support@univ-bba.dz</p>
+        <p>منصة إيداع مذكرات التخرج - كلية علوم الطبيعة و الحياة وعلوم الارض والكون© 2025</p>
+        <p> fsnv@univ-bba.dz للإبلاغ عن مشاكل تقنية يرجى التواصل على  </p>
     </div>
     """, unsafe_allow_html=True)
