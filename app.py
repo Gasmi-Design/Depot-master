@@ -5,43 +5,39 @@ from datetime import datetime
 
 st.set_page_config(page_title="منصة إيداع مذكرات التخرج", layout="centered")
 
-# === إعداد CSS مع تحسين العرض والتنسيق العام ===
+# === إعداد CSS لتحسين الواجهة ===
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cairo&display=swap');
-    html, body, [class*="css"] {
-        font-family: 'Cairo', sans-serif;
-        direction: rtl;
-        text-align: right;
-    }
     .main {
-        background-color: #f7f9fc;
-        padding: 2rem 2rem;
-        border-radius: 12px;
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-        max-width: 460px;
-        margin: 3rem auto 2rem auto;
-        color: #2c3e50;
+        background-color: #f5f7fa;
+        padding: 3rem 2rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        max-width: 480px;
+        margin: 4rem auto 2rem auto;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: #333;
     }
     h1 {
         text-align: center;
-        color: #1a5276;
-        margin-bottom: 0.5rem;
-        font-weight: bold;
+        color: #2c3e50;
+        margin-bottom: 0.3rem;
+        font-weight: 700;
     }
     h4 {
         text-align: center;
-        color: #154360;
+        color: #34495e;
         margin-top: 0;
-        margin-bottom: 1.5rem;
+        margin-bottom: 2rem;
         font-weight: 500;
+        line-height: 1.3;
     }
     label, .stTextInput > div > input, .stSelectbox > div > div {
         font-size: 1.1rem !important;
     }
     button {
         width: 100%;
-        background-color: #1a5276;
+        background-color: #2980b9;
         color: white;
         padding: 0.65rem;
         font-size: 1.1rem;
@@ -50,7 +46,7 @@ st.markdown("""
         margin-top: 1rem;
     }
     button:hover {
-        background-color: #2980b9;
+        background-color: #3498db;
         cursor: pointer;
     }
     .logout-btn {
@@ -74,34 +70,37 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# كلمات السر المتعددة (عشوائية مثالاً، يمكنك توليد أكثر)
-STUDENT_PASSWORDS = ["std123", "abc321", "pass987"]
-SUPERVISOR_PASSWORDS = ["sup123", "xyz456", "pass000"]
+
+# كلمات السر
+STUDENT_PASSWORD = "student123"
+SUPERVISOR_PASSWORD = "supervisor123"
 
 UPLOAD_DIR = "uploaded_memos"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 sections = ["العلوم البيولوجية", "العلوم الفلاحية", "علوم التغذية", "علم البيئة والمحيط"]
 data_file = "data.csv"
+
 if not os.path.exists(data_file):
     df_init = pd.DataFrame(columns=["رقم التسجيل", "الاسم", "اللقب", "تاريخ الميلاد", "القسم", "المشرف", "عنوان المذكرة", "اسم الملف", "تاريخ الإيداع"])
     df_init.to_csv(data_file, index=False, encoding="utf-8")
 
 def reset_state():
-    for key in list(st.session_state.keys()):
+    keys = list(st.session_state.keys())
+    for key in keys:
         del st.session_state[key]
 
 def rerun():
+    # تغيير قيمة لتفعيل إعادة تحميل الصفحة
     st.session_state["rerun_flag"] = not st.session_state.get("rerun_flag", False)
 
-# === الواجهة ===
-st.image("header.png", use_container_width=True)
-
+# الصفحة الرئيسية وواجهة المستخدم
 with st.container():
     st.markdown('<div class="main">', unsafe_allow_html=True)
     st.markdown("<h1>📥 منصة إيداع مذكرات التخرج</h1>", unsafe_allow_html=True)
     st.markdown("<h4>جامعة محمد البشير الإبراهيمي - برج بوعريريج<br>كلية علوم الطبيعة و الحياة وعلوم الأرض والكون</h4>", unsafe_allow_html=True)
 
+    # تهيئة المتغيرات الجلسية
     if "logged_in" not in st.session_state:
         st.session_state.logged_in = False
         st.session_state.role = None
@@ -111,10 +110,10 @@ with st.container():
         role = st.selectbox("👤 اختر نوع الدخول:", ["طالب", "مشرف"])
         password = st.text_input("🔐 أدخل كلمة السر:", type="password")
         if st.button("دخول"):
-            if (role == "طالب" and password in STUDENT_PASSWORDS) or (role == "مشرف" and password in SUPERVISOR_PASSWORDS):
+            if (role == "طالب" and password == STUDENT_PASSWORD) or (role == "مشرف" and password == SUPERVISOR_PASSWORD):
                 st.session_state.logged_in = True
                 st.session_state.role = role
-                rerun()
+                rerun()  # يعيد تحميل الصفحة ليظهر المحتوى المناسب بعد تسجيل الدخول
             else:
                 st.error("⚠️ كلمة السر غير صحيحة، حاول مرة أخرى.")
     else:
@@ -141,10 +140,13 @@ with st.container():
                     if all([reg_num, first_name, last_name, section, supervisor, title, file]):
                         section_folder = os.path.join(UPLOAD_DIR, section)
                         os.makedirs(section_folder, exist_ok=True)
+
                         filename = f"{reg_num}_{file.name}"
                         file_path = os.path.join(section_folder, filename)
+
                         with open(file_path, "wb") as f:
                             f.write(file.getbuffer())
+
                         df = pd.read_csv(data_file)
                         new_row = {
                             "رقم التسجيل": reg_num,
@@ -159,13 +161,16 @@ with st.container():
                         }
                         df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
                         df.to_csv(data_file, index=False, encoding="utf-8")
+
                         st.success("✅ تم إيداع المذكرة بنجاح.")
                     else:
                         st.error("⚠️ يرجى ملء جميع الحقول وتحميل ملف.")
 
         elif st.session_state.role == "مشرف":
             st.success("✅ تم تسجيل الدخول كمشرف")
+
             df = pd.read_csv(data_file)
+
             st.subheader("📊 إحصائيات")
             col1, col2, col3 = st.columns(3)
             col1.markdown(f"<div class='metric'>📚 عدد المذكرات الكلي<br><b>{len(df)}</b></div>", unsafe_allow_html=True)
@@ -175,6 +180,7 @@ with st.container():
             st.subheader("🔍 تصفية وبحث")
             selected_section = st.selectbox("اختر قسمًا:", ["الكل"] + sections)
             selected_supervisor = st.selectbox("اختر مشرفًا:", ["الكل"] + sorted(df["المشرف"].unique()))
+
             filtered_df = df.copy()
             if selected_section != "الكل":
                 filtered_df = filtered_df[filtered_df["القسم"] == selected_section]
@@ -182,10 +188,11 @@ with st.container():
                 filtered_df = filtered_df[filtered_df["المشرف"] == selected_supervisor]
 
             st.subheader("📄 قائمة المذكرات")
+
             if filtered_df.empty:
                 st.info("لا توجد مذكرات لعرضها حسب التصفية المحددة.")
             else:
-                for _, row in filtered_df.iterrows():
+                for idx, row in filtered_df.iterrows():
                     with st.expander(f"📌 {row['عنوان المذكرة']}"):
                         st.markdown(f"**الاسم:** {row['الاسم']} {row['اللقب']}")
                         st.markdown(f"**رقم التسجيل:** {row['رقم التسجيل']}")
@@ -198,6 +205,7 @@ with st.container():
                         else:
                             st.error("ملف المذكرة غير موجود!")
 
+        # زر الخروج في الأسفل
         st.markdown('<div class="logout-btn">', unsafe_allow_html=True)
         if st.button("🚪 تسجيل خروج"):
             reset_state()
