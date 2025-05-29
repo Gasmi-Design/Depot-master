@@ -6,7 +6,7 @@ import hashlib
 import sqlite3
 from PIL import Image
 import arabic_reshaper
-from bidi.algorithm import get_display
+
 
 # --- تهيئة الصفحة ---
 st.set_page_config(
