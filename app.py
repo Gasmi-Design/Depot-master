@@ -371,18 +371,35 @@ with st.container():
             
             # ميزات إضافية للمسؤولين
             if st.session_state.role == "مسؤول":
-                st.subheader("⚙️ أدوات الإدارة")
+    st.subheader("⚙️ أدوات الإدارة")
+    
+    try:
+        if st.button("تصدير جميع البيانات إلى Excel"):
+            excel_file = "theses_export.xlsx"
+            try:
+                # التأكد من تثبيت openpyxl
+                import openpyxl
+                df.to_excel(excel_file, index=False, engine='openpyxl')
                 
-                if st.button("تصدير جميع البيانات إلى Excel"):
-                    excel_file = "theses_export.xlsx"
-                    df.to_excel(excel_file, index=False)
+                with open(excel_file, "rb") as f:
                     st.download_button(
                         label="⬇️ تحميل ملف Excel",
-                        data=open(excel_file, "rb").read(),
+                        data=f,
                         file_name="theses_export.xlsx",
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                     )
-                
+                os.remove(excel_file)  # حذف الملف المؤقت بعد التحميل
+            except ImportError:
+                st.error("""
+                المكتبة المطلوبة غير مثبتة. الرجاء إضافة:
+                ```python
+                pip install openpyxl
+                ```
+                إلى متطلبات المشروع.""")
+            except Exception as e:
+                st.error(f"حدث خطأ أثناء التصدير: {str(e)}")
+    except Exception as e:
+        st.error(f"خطأ في أدوات الإدارة: {str(e)}")
                 if st.button("حذف جميع البيانات", key="delete_all"):
                     st.warning("هذا الإجراء سيحذف جميع البيانات بشكل دائم. تأكد قبل المتابعة.")
                     if st.button("تأكيد الحذف", key="confirm_delete"):
