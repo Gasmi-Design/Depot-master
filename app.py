@@ -8,15 +8,23 @@ st.set_page_config(page_title="منصة إيداع مذكرات التخرج", l
 # === إعداد CSS لتحسين الواجهة ===
 st.markdown("""
 <style>
+    body {
+        background-color: #f0f2f6;
+    }
     .main {
-        background-color: #f5f7fa;
+        background-color: white;
         padding: 3rem 2rem;
-        border-radius: 10px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        max-width: 480px;
+        border-radius: 12px;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+        max-width: 500px;
         margin: 4rem auto 2rem auto;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         color: #333;
+        animation: fadeIn 1.2s ease-in-out;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
     }
     h1 {
         text-align: center;
@@ -33,7 +41,7 @@ st.markdown("""
         line-height: 1.3;
     }
     label, .stTextInput > div > input, .stSelectbox > div > div {
-        font-size: 1.1rem !important;
+        font-size: 1.05rem !important;
     }
     button {
         width: 100%;
@@ -67,8 +75,21 @@ st.markdown("""
         font-weight: 600;
         color: #2c3e50;
     }
+    .header-image {
+        width: 100%;
+        border-radius: 12px;
+        margin-bottom: 1rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
 </style>
 """, unsafe_allow_html=True)
+
+# === عرض صورة الغلاف ===
+from PIL import Image
+image_path = "cover.jpg"  # تأكد أن الصورة موجودة في نفس مجلد app.py
+if os.path.exists(image_path):
+    st.image(image_path, use_column_width=True, output_format="auto", caption="منصة إيداع المذكرات", channels="RGB")
+
 
 
 # كلمات السر
