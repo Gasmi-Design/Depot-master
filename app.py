@@ -82,7 +82,7 @@ PASSWORDS = {
         "Biologie": "sup123",
         "Agronomie": "sup456",
         "Alimentaire": "sup789"
-        "Ecologie": "sup789"
+        "Ecologie": "sup7896"
     }
 }
 
