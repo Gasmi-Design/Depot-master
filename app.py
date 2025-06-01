@@ -10,78 +10,103 @@ st.set_page_config(page_title="منصة إيداع مذكرات التخرج", l
 st.markdown("""
 <style>
 body, .main, .block-container {
-        direction: rtl !important;
-        text-align: right !important;
-    .main {
-        background-color: #f5f5f5;
-        padding: 3rem 2rem;
-        border-radius: 10px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        max-width: 800px;
-        margin: 2rem auto;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        color: #333;
-    }
-    h1 {
-        text-align: center;
-        color: #2c3e50;
-        margin-bottom: 0.5rem;
-        font-weight: 700;
-    }
-    h4 {
-        text-align: center;
-        color: #34495e;
-        margin-top: 0;
-        margin-bottom: 2rem;
-        font-weight: 500;
-    }
-    .rtl-input {
-        text-align: right !important;
-        direction: rtl !important;
-    }
-    .stTextInput input, .stSelectbox select, .stTextArea textarea {
-        font-size: 1rem !important;
-    }
-    .stButton button {
-        width: 100%;
-        background-color: #4CAF50;
-        color: white;
-        padding: 0.75rem;
-        font-size: 1rem;
-        border-radius: 6px;
-        border: none;
-        margin-top: 1rem;
-        transition: background-color 0.3s;
-    }
-    .stButton button:hover {
-        background-color: #45a049;
-    }
-    .logout-btn {
-        margin-top: 2rem;
-        text-align: center;
-    }
-    .metric-box {
-        background: #e8f5e9;
-        border-radius: 8px;
-        padding: 1rem;
-        margin-bottom: 1rem;
-        text-align: center;
-    }
-    .success-msg {
-        color: #2e7d32;
-        background-color: #e8f5e9;
-        padding: 1rem;
-        border-radius: 4px;
-        margin-bottom: 1rem;
-    }
-    .error-msg {
-        color: #c62828;
-        background-color: #ffebee;
-        padding: 1rem;
-        border-radius: 4px;
-        margin-bottom: 1rem;
-    }
+    direction: rtl !important;
+    text-align: right !important;
+    font-size: 20px !important;
+    font-weight: bold !important;
+    color: #003366 !important; /* أزرق داكن */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+}
+
+.main {
+    background-color: #f5f5f5;
+    padding: 3rem 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    max-width: 800px;
+    margin: 2rem auto;
+}
+
+h1 {
+    text-align: center;
+    color: #003366 !important;
+    margin-bottom: 0.5rem;
+    font-weight: 900 !important;
+    font-size: 36px !important;
+}
+
+h4 {
+    text-align: center;
+    color: #003366 !important;
+    margin-top: 0;
+    margin-bottom: 2rem;
+    font-weight: 700 !important;
+    font-size: 22px !important;
+}
+
+.rtl-input {
+    text-align: right !important;
+    direction: rtl !important;
+}
+
+.stTextInput input, .stSelectbox select, .stTextArea textarea {
+    font-size: 1.1rem !important;
+    font-weight: bold !important;
+    color: #003366 !important;
+}
+
+.stButton button {
+    width: 100%;
+    background-color: #4CAF50;
+    color: white;
+    padding: 0.75rem;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border-radius: 6px;
+    border: none;
+    margin-top: 1rem;
+    transition: background-color 0.3s;
+}
+
+.stButton button:hover {
+    background-color: #45a049;
+}
+
+.logout-btn {
+    margin-top: 2rem;
+    text-align: center;
+}
+
+.metric-box {
+    background: #e8f5e9;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #003366;
+}
+
+.success-msg {
+    color: #2e7d32;
+    background-color: #e8f5e9;
+    padding: 1rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    font-weight: bold;
+}
+
+.error-msg {
+    color: #c62828;
+    background-color: #ffebee;
+    padding: 1rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    font-weight: bold;
+}
 </style>
+
 """, unsafe_allow_html=True)
 
 # قاعدة بيانات كلمات المرور
