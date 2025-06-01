@@ -9,6 +9,9 @@ st.set_page_config(page_title="منصة إيداع مذكرات التخرج", l
 # === إعداد CSS لتحسين الواجهة ===
 st.markdown("""
 <style>
+body, .main, .block-container {
+        direction: rtl !important;
+        text-align: right !important;
     .main {
         background-color: #f5f5f5;
         padding: 3rem 2rem;
