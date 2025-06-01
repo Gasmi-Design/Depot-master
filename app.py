@@ -9,7 +9,7 @@ st.set_page_config(page_title="منصة إيداع مذكرات التخرج", l
 st.markdown("""
 <style>
     .main {
-        background-color: #f5f7fa;
+        background-color: #205e43;
         padding: 3rem 2rem;
         border-radius: 10px;
         box-shadow: 0 4px 15px rgba(0,0,0,0.1);
