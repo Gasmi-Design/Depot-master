@@ -245,23 +245,40 @@ with st.container():
             if filtered_df.empty:
                 st.info("لا توجد مذكرات متاحة حسب معايير التصفية المحددة")
             else:
-                for _, row in filtered_df.iterrows():
-                    with st.expander(f"{row['عنوان المذكرة']} - {row['الاسم']} {row['اللقب']}"):
-                        st.markdown(f"**رقم التسجيل:** {row['رقم التسجيل']}")
-                        st.markdown(f"**القسم:** {row['القسم']}")
-                        st.markdown(f"**المشرف:** {row['المشرف']}")
-                        st.markdown(f"**تاريخ الإيداع:** {row['تاريخ الإيداع']}")
-                        
-                        file_path = os.path.join(UPLOAD_DIR, row['القسم'], row['اسم الملف'])
-                        if os.path.exists(file_path):
-                            st.download_button(
-                                label="تحميل المذكرة",
-                                data=open(file_path, "rb").read(),
-                                file_name=row['اسم الملف'],
-                                mime="application/pdf"
-                            )
-                        else:
-                            st.error("الملف غير موجود في النظام")
+                for index, row in filtered_df.iterrows():
+    with st.expander(f"{row['عنوان المذكرة']} - {row['الاسم']} {row['اللقب']}"):
+        st.markdown(f"**رقم التسجيل:** {row['رقم التسجيل']}")
+        st.markdown(f"**القسم:** {row['القسم']}")
+        st.markdown(f"**المشرف:** {row['المشرف']}")
+        st.markdown(f"**تاريخ الإيداع:** {row['تاريخ الإيداع']}")
+
+        file_path = os.path.join(UPLOAD_DIR, row['القسم'], row['اسم الملف'])
+
+        col1, col2 = st.columns(2)
+        with col1:
+            if os.path.exists(file_path):
+                st.download_button(
+                    label="📥 تحميل المذكرة",
+                    data=open(file_path, "rb").read(),
+                    file_name=row['اسم الملف'],
+                    mime="application/pdf"
+                )
+            else:
+                st.error("❌ الملف غير موجود في النظام")
+
+        with col2:
+            if st.button("🗑️ حذف المذكرة", key=f"delete_{index}"):
+                # حذف الملف
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+
+                # حذف السطر من ملف CSV
+                df.drop(index=index, inplace=True)
+                df.to_csv(data_file, index=False, encoding="utf-8")
+
+                st.success("✅ تم حذف المذكرة بنجاح")
+                st.rerun()
+
 
         # زر تسجيل الخروج
         st.markdown('<div class="logout-btn">', unsafe_allow_html=True)
