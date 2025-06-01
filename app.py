@@ -229,9 +229,6 @@ def add_bg_from_local(image_file):
         unsafe_allow_html=True
     )
 
-# يمكنك إضافة صورة خلفية إذا أردت
-# add_bg_from_local('background.jpg')
-
 # === قاعدة بيانات كلمات المرور ===
 PASSWORDS = {
     "طالب": {
@@ -488,7 +485,7 @@ def supervisor_dashboard():
                                     df.at[idx, 'ملاحظات المشرف'] = notes
                                     df.to_csv(data_file, index=False, encoding="utf-8")
                                     st.success("تم تحديث حالة المذكرة بنجاح!")
-                                    st.experimental_rerun()
+                                    st.rerun()
         
         st.markdown("</div>", unsafe_allow_html=True)
 
@@ -518,7 +515,7 @@ else:
     </div>
     """, unsafe_allow_html=True)
     
-    if st.experimental_get_query_params().get("logout"):
+    if st.query_params().get("logout"):
         reset_state()
-        st.experimental_set_query_params()
-        st.experimental_rerun()
+        st.query_params.clear()
+        st.rerun()
