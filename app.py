@@ -8,78 +8,84 @@ st.set_page_config(page_title="منصة إيداع مذكرات التخرج", l
 # === إعداد CSS لتحسين الواجهة ===
 st.markdown("""
 <style>
-body {
-    background-color: #eef3f7;
-}
-.main {
-    background: white;
-    padding: 3rem 2rem;
-    border-radius: 16px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-    max-width: 600px;
-    margin: 5rem auto 2rem auto;
-    font-family: 'Cairo', sans-serif;
-    color: #333;
-}
-h1 {
-    text-align: center;
-    color: #2c3e50;
-    font-weight: 800;
-    font-size: 2.2rem;
-    margin-bottom: 0.3rem;
-}
-h4 {
-    text-align: center;
-    color: #555;
-    font-weight: 500;
-    margin-top: 0;
-    margin-bottom: 2rem;
-    line-height: 1.6;
-}
-label, .stTextInput > div > input, .stSelectbox > div > div {
-    font-size: 1.1rem !important;
-    text-align: right !important;
-    direction: rtl !important;
-}
-.stTextInput > div > input, 
-.stSelectbox > div > div {
-    text-align: right !important;
-    direction: rtl !important;
-}
-button {
-    width: 100%;
-    background: linear-gradient(to right, #3498db, #2980b9);
-    color: white;
-    padding: 0.75rem;
-    font-size: 1.1rem;
-    border-radius: 8px;
-    border: none;
-    margin-top: 1rem;
-}
-button:hover {
-    background: linear-gradient(to right, #5dade2, #3498db);
-    cursor: pointer;
-}
-.logout-btn {
-    margin-top: 2.5rem;
-    text-align: center;
-}
-.metric-container {
-    display: flex;
-    justify-content: space-around;
-    margin-bottom: 1rem;
-}
-.metric {
-    background: #eaf2f8;
-    border-radius: 8px;
-    padding: 1rem 1.5rem;
-    width: 30%;
-    text-align: center;
-    font-weight: 600;
-    color: #2c3e50;
-}
+    .main {
+        background-color: #f5f7fa;
+        padding: 3rem 2rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        max-width: 480px;
+        margin: 4rem auto 2rem auto;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: #333;
+    }
+    h1 {
+        text-align: center;
+        color: #2c3e50;
+        margin-bottom: 0.3rem;
+        font-weight: 700;
+    }
+    h4 {
+        text-align: center;
+        color: #34495e;
+        margin-top: 0;
+        margin-bottom: 2rem;
+        font-weight: 500;
+        line-height: 1.3;
+    }
+    label, .stTextInput > div > input, .stSelectbox > div > div {
+        font-size: 1.1rem !important;
+        text-align: right !important;
+        direction: rtl !important;
+    }
+    .stTextInput > div > input {
+        text-align: right !important;
+    }
+    button {
+        width: 100%;
+        background-color: #2980b9;
+        color: white;
+        padding: 0.65rem;
+        font-size: 1.1rem;
+        border-radius: 6px;
+        border: none;
+        margin-top: 1rem;
+    }
+    button:hover {
+        background-color: #3498db;
+        cursor: pointer;
+    }
+    .logout-btn {
+        margin-top: 2rem;
+        text-align: center;
+    }
+    .metric-container {
+        display: flex;
+        justify-content: space-around;
+        margin-bottom: 1rem;
+    }
+    .metric {
+        background: #eaf2f8;
+        border-radius: 8px;
+        padding: 1rem 1.5rem;
+        width: 30%;
+        text-align: center;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    .student-form {
+        direction: rtl;
+        text-align: right;
+    }
+    .student-form .stTextInput, 
+    .student-form .stSelectbox, 
+    .student-form .stDateInput,
+    .student-form .stFileUploader {
+        text-align: right;
+        direction: rtl;
+    }
 </style>
 """, unsafe_allow_html=True)
+
 
 # قاعدة بيانات كلمات المرور
 PASSWORDS = {
@@ -112,15 +118,16 @@ def reset_state():
         del st.session_state[key]
 
 def rerun():
+    # تغيير قيمة لتفعيل إعادة تحميل الصفحة
     st.session_state["rerun_flag"] = not st.session_state.get("rerun_flag", False)
 
-# === الصفحة الرئيسية ===
+# الصفحة الرئيسية وواجهة المستخدم
 with st.container():
     st.markdown('<div class="main">', unsafe_allow_html=True)
-    st.image("https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Logo_Universit%C3%A9_Mohamed_El_Bachir_El_Ibrahimi_de_Bordj_Bou_Arr%C3%A9ridj.png/600px-Logo_Universit%C3%A9_Mohamed_El_Bachir_El_Ibrahimi_de_Bordj_Bou_Arr%C3%A9ridj.png", width=100)
     st.markdown("<h1>📥 منصة إيداع مذكرات التخرج</h1>", unsafe_allow_html=True)
     st.markdown("<h4>جامعة محمد البشير الإبراهيمي - برج بوعريريج<br>كلية علوم الطبيعة و الحياة وعلوم الأرض والكون</h4>", unsafe_allow_html=True)
 
+    # تهيئة المتغيرات الجلسية
     if "logged_in" not in st.session_state:
         st.session_state.logged_in = False
         st.session_state.role = None
@@ -131,22 +138,23 @@ with st.container():
         role = st.selectbox("👤 اختر نوع الدخول:", ["طالب", "مشرف"])
         username = st.text_input("👤 اسم المستخدم")
         password = st.text_input("🔐 أدخل كلمة السر:", type="password")
-
+        
         if st.button("دخول"):
             if (role == "طالب" and username in PASSWORDS["طالب"] and password == PASSWORDS["طالب"][username]) or \
                (role == "مشرف" and username in PASSWORDS["مشرف"] and password == PASSWORDS["مشرف"][username]):
                 st.session_state.logged_in = True
                 st.session_state.role = role
                 st.session_state.username = username
-                rerun()
+                rerun()  # يعيد تحميل الصفحة ليظهر المحتوى المناسب بعد تسجيل الدخول
             else:
                 st.error("⚠️ اسم المستخدم أو كلمة السر غير صحيحة، حاول مرة أخرى.")
-
     else:
         if st.session_state.role == "طالب":
             st.success(f"✅ تم تسجيل الدخول كطالب - {st.session_state.username}")
             with st.form("student_form"):
+                st.markdown('<div class="student-form">', unsafe_allow_html=True)
                 st.subheader("📝 معلومات الطالب")
+
                 reg_num = st.text_input("🔢 رقم التسجيل")
                 first_name = st.text_input("👤 الاسم")
                 last_name = st.text_input("👤 اللقب")
@@ -155,16 +163,21 @@ with st.container():
                 supervisor = st.text_input("👨‍🏫 اسم المشرف")
                 title = st.text_input("📄 عنوان المذكرة")
                 file = st.file_uploader("📎 تحميل ملف المذكرة (PDF)", type=["pdf"])
-                submitted = st.form_submit_button("📤 إيداع")
 
+                submitted = st.form_submit_button("📤 إيداع")
+                st.markdown('</div>', unsafe_allow_html=True)
+                
                 if submitted:
                     if all([reg_num, first_name, last_name, section, supervisor, title, file]):
                         section_folder = os.path.join(UPLOAD_DIR, section)
                         os.makedirs(section_folder, exist_ok=True)
+
                         filename = f"{reg_num}_{file.name}"
                         file_path = os.path.join(section_folder, filename)
+
                         with open(file_path, "wb") as f:
                             f.write(file.getbuffer())
+
                         df = pd.read_csv(data_file)
                         new_row = {
                             "رقم التسجيل": reg_num,
@@ -179,13 +192,16 @@ with st.container():
                         }
                         df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
                         df.to_csv(data_file, index=False, encoding="utf-8")
+
                         st.success("✅ تم إيداع المذكرة بنجاح.")
                     else:
                         st.error("⚠️ يرجى ملء جميع الحقول وتحميل ملف.")
 
         elif st.session_state.role == "مشرف":
             st.success(f"✅ تم تسجيل الدخول كمشرف - {st.session_state.username}")
+
             df = pd.read_csv(data_file)
+
             st.subheader("📊 إحصائيات")
             col1, col2, col3 = st.columns(3)
             col1.markdown(f"<div class='metric'>📚 عدد المذكرات الكلي<br><b>{len(df)}</b></div>", unsafe_allow_html=True)
@@ -195,12 +211,15 @@ with st.container():
             st.subheader("🔍 تصفية وبحث")
             selected_section = st.selectbox("اختر قسمًا:", ["الكل"] + sections)
             selected_supervisor = st.selectbox("اختر مشرفًا:", ["الكل"] + sorted(df["المشرف"].unique()))
+
             filtered_df = df.copy()
             if selected_section != "الكل":
                 filtered_df = filtered_df[filtered_df["القسم"] == selected_section]
             if selected_supervisor != "الكل":
                 filtered_df = filtered_df[filtered_df["المشرف"] == selected_supervisor]
+
             st.subheader("📄 قائمة المذكرات")
+
             if filtered_df.empty:
                 st.info("لا توجد مذكرات لعرضها حسب التصفية المحددة.")
             else:
@@ -213,10 +232,11 @@ with st.container():
                         st.markdown(f"**تاريخ الإيداع:** {row['تاريخ الإيداع']}")
                         file_path = os.path.join(UPLOAD_DIR, row['القسم'], row['اسم الملف'])
                         if os.path.exists(file_path):
-                            st.download_button("⬇️ تحميل المذكرة", open(file_path, "rb").read(), file_name=row['اسم الملف'], mime="application/pdf")
+                            st.download_button(label="⬇️ تحميل المذكرة", data=open(file_path, "rb").read(), file_name=row['اسم الملف'], mime="application/pdf")
                         else:
                             st.error("ملف المذكرة غير موجود!")
 
+        # زر الخروج في الأسفل
         st.markdown('<div class="logout-btn">', unsafe_allow_html=True)
         if st.button("🚪 تسجيل خروج"):
             reset_state()
