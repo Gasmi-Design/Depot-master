@@ -83,6 +83,26 @@ st.markdown("""
         text-align: right;
         direction: rtl;
     }
+    .reservation-info {
+        background-color: #e6f2ff;
+        padding: 1.5rem;
+        border-radius: 10px;
+        margin: 1.5rem 0;
+        border-left: 5px solid #2980b9;
+        font-size: 1.2rem !important;
+        line-height: 1.6;
+        direction: rtl;
+        text-align: right;
+    }
+    .reservation-info h3 {
+        color: #2c3e50;
+        margin-top: 0;
+        font-size: 1.4rem;
+        text-align: right;
+    }
+    .reservation-info p {
+        margin-bottom: 0.8rem;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -151,6 +171,20 @@ with st.container():
     else:
         if st.session_state.role == "طالب":
             st.success(f"✅ تم تسجيل الدخول كطالب - {st.session_state.username}")
+            
+            # إضافة إطار معلومات الحجز
+            st.markdown("""
+            <div class="reservation-info">
+                <h3>📌 معلومات مهمة حول الحجز</h3>
+                <p>• مواعيد إيداع المذكرات: من 1 يونيو إلى 30 يونيو 2024</p>
+                <p>• الوقت المتاح: من الساعة 8 صباحاً حتى 4 مساءً</p>
+                <p>• مكان التسليم: قسم الشؤون العلمية بالكلية</p>
+                <p>• يجب أن يكون الملف بصيغة PDF وحجمه لا يتجاوز 10MB</p>
+                <p>• يرجى مراجعة المشرف قبل الإيداع النهائي</p>
+                <p>• لن يتم قبول أي مذكرة بعد الموعد النهائي</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
             with st.form("student_form"):
                 st.markdown('<div class="student-form">', unsafe_allow_html=True)
                 st.subheader("📝 معلومات الطالب")
