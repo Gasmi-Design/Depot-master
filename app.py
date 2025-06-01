@@ -71,9 +71,19 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-# كلمات السر
-STUDENT_PASSWORD = "student123"
-SUPERVISOR_PASSWORD = "supervisor123"
+# قاعدة بيانات كلمات المرور
+PASSWORDS = {
+    "طالب": {
+        "student1": "pass123",
+        "student2": "pass456",
+        "student3": "pass789"
+    },
+    "مشرف": {
+        "supervisor1": "sup123",
+        "supervisor2": "sup456",
+        "supervisor3": "sup789"
+    }
+}
 
 UPLOAD_DIR = "uploaded_memos"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -104,21 +114,26 @@ with st.container():
     if "logged_in" not in st.session_state:
         st.session_state.logged_in = False
         st.session_state.role = None
+        st.session_state.username = None
         st.session_state.rerun_flag = False
 
     if not st.session_state.logged_in:
         role = st.selectbox("👤 اختر نوع الدخول:", ["طالب", "مشرف"])
+        username = st.text_input("👤 اسم المستخدم")
         password = st.text_input("🔐 أدخل كلمة السر:", type="password")
+        
         if st.button("دخول"):
-            if (role == "طالب" and password == STUDENT_PASSWORD) or (role == "مشرف" and password == SUPERVISOR_PASSWORD):
+            if (role == "طالب" and username in PASSWORDS["طالب"] and password == PASSWORDS["طالب"][username]) or \
+               (role == "مشرف" and username in PASSWORDS["مشرف"] and password == PASSWORDS["مشرف"][username]):
                 st.session_state.logged_in = True
                 st.session_state.role = role
+                st.session_state.username = username
                 rerun()  # يعيد تحميل الصفحة ليظهر المحتوى المناسب بعد تسجيل الدخول
             else:
-                st.error("⚠️ كلمة السر غير صحيحة، حاول مرة أخرى.")
+                st.error("⚠️ اسم المستخدم أو كلمة السر غير صحيحة، حاول مرة أخرى.")
     else:
         if st.session_state.role == "طالب":
-            st.success("✅ تم تسجيل الدخول كطالب")
+            st.success(f"✅ تم تسجيل الدخول كطالب - {st.session_state.username}")
             with st.form("student_form"):
                 st.subheader("📝 معلومات الطالب")
 
@@ -167,7 +182,7 @@ with st.container():
                         st.error("⚠️ يرجى ملء جميع الحقول وتحميل ملف.")
 
         elif st.session_state.role == "مشرف":
-            st.success("✅ تم تسجيل الدخول كمشرف")
+            st.success(f"✅ تم تسجيل الدخول كمشرف - {st.session_state.username}")
 
             df = pd.read_csv(data_file)
 
