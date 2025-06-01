@@ -8,123 +8,80 @@ st.set_page_config(page_title="منصة إيداع مذكرات التخرج", l
 
 # === إعداد CSS لتحسين الواجهة ===
 st.markdown("""
-st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
-
 body, .main, .block-container {
-    direction: rtl !important;
-    text-align: right !important;
-    background: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%) !important;
-    font-family: 'Cairo', sans-serif !important;
-    font-size: 18px !important;
-    color: #333;
-}
-
-.main {
-    background-color: #ffffffcc;
-    padding: 3rem 2rem;
-    border-radius: 15px;
-    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
-    max-width: 900px;
-    margin: 2rem auto;
-}
-
-h1 {
-    text-align: center;
-    color: #2c3e50;
-    font-weight: 700;
-    font-size: 36px !important;
-    margin-bottom: 0.5rem;
-}
-
-h4 {
-    text-align: center;
-    color: #34495e;
-    font-size: 20px !important;
-    margin-top: 0;
-    margin-bottom: 2rem;
-    font-weight: 500;
-}
-
-.stTextInput input, .stSelectbox select, .stTextArea textarea {
-    font-size: 1.1rem !important;
-    padding: 0.6rem !important;
-    border-radius: 8px !important;
-    border: 1px solid #ccc !important;
-    background-color: #fdfdfd !important;
-}
-
-.stButton button {
-    width: 100%;
-    background-color: #3498db;
-    color: white;
-    padding: 0.8rem;
-    font-size: 1.1rem;
-    font-weight: 600;
-    border-radius: 8px;
-    border: none;
-    margin-top: 1rem;
-    transition: all 0.3s ease;
-}
-
-.stButton button:hover {
-    background-color: #2980b9;
-}
-
-.logout-btn {
-    margin-top: 2rem;
-    text-align: center;
-}
-
-.metric-box {
-    background: #ecf0f1;
-    border-radius: 12px;
-    padding: 1rem;
-    margin-bottom: 1rem;
-    text-align: center;
-    font-size: 1.2rem;
-    font-weight: 600;
-}
-
-.success-msg {
-    color: #2e7d32;
-    background-color: #e8f5e9;
-    padding: 1rem;
-    border-radius: 6px;
-    margin-bottom: 1rem;
-    font-size: 1.1rem;
-}
-
-.error-msg {
-    color: #c62828;
-    background-color: #ffebee;
-    padding: 1rem;
-    border-radius: 6px;
-    margin-bottom: 1rem;
-    font-size: 1.1rem;
-}
-
-.stExpanderHeader {
-    font-size: 1.1rem !important;
-    font-weight: 600 !important;
-    color: #2c3e50 !important;
-}
-
-.stDownloadButton>button {
-    background-color: #27ae60 !important;
-    font-weight: 600;
-    padding: 0.6rem 1rem;
-    border-radius: 8px;
-    font-size: 1rem;
-}
-
-.stDownloadButton>button:hover {
-    background-color: #1e8449 !important;
-}
+        direction: rtl !important;
+        text-align: right !important;
+    .main {
+        background-color: #f5f5f5;
+        padding: 3rem 2rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        max-width: 800px;
+        margin: 2rem auto;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: #333;
+    }
+    h1 {
+        text-align: center;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+        font-weight: 700;
+    }
+    h4 {
+        text-align: center;
+        color: #34495e;
+        margin-top: 0;
+        margin-bottom: 2rem;
+        font-weight: 500;
+    }
+    .rtl-input {
+        text-align: right !important;
+        direction: rtl !important;
+    }
+    .stTextInput input, .stSelectbox select, .stTextArea textarea {
+        font-size: 1rem !important;
+    }
+    .stButton button {
+        width: 100%;
+        background-color: #4CAF50;
+        color: white;
+        padding: 0.75rem;
+        font-size: 1rem;
+        border-radius: 6px;
+        border: none;
+        margin-top: 1rem;
+        transition: background-color 0.3s;
+    }
+    .stButton button:hover {
+        background-color: #45a049;
+    }
+    .logout-btn {
+        margin-top: 2rem;
+        text-align: center;
+    }
+    .metric-box {
+        background: #e8f5e9;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+    .success-msg {
+        color: #2e7d32;
+        background-color: #e8f5e9;
+        padding: 1rem;
+        border-radius: 4px;
+        margin-bottom: 1rem;
+    }
+    .error-msg {
+        color: #c62828;
+        background-color: #ffebee;
+        padding: 1rem;
+        border-radius: 4px;
+        margin-bottom: 1rem;
+    }
 </style>
-""", unsafe_allow_html=True)
-
 """, unsafe_allow_html=True)
 
 # قاعدة بيانات كلمات المرور
