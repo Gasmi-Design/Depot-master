@@ -42,7 +42,7 @@ st.markdown("""
     }
     button {
         width: 100%;
-        background-color: #2980b9;
+        background-color: #1058e8;
         color: white;
         padding: 0.65rem;
         font-size: 1.1rem;
@@ -136,10 +136,14 @@ with st.container():
 
     if not st.session_state.logged_in:
         role = st.selectbox("👤 اختر نوع الدخول:", ["طالب", "مشرف"])
-        username = st.text_input("👤 اسم المستخدم")
-        password = st.text_input("🔐 أدخل كلمة السر:", type="password")
         
-        if st.button("دخول"):
+        # إنشاء نموذج للدخول لجعل زر Enter يعمل
+        with st.form("login_form"):
+            username = st.text_input("👤 اسم المستخدم")
+            password = st.text_input("🔐 أدخل كلمة السر:", type="password")
+            submitted = st.form_submit_button("دخول")
+        
+        if submitted:
             if (role == "طالب" and username in PASSWORDS["طالب"] and password == PASSWORDS["طالب"][username]) or \
                (role == "مشرف" and username in PASSWORDS["مشرف"] and password == PASSWORDS["مشرف"][username]):
                 st.session_state.logged_in = True
