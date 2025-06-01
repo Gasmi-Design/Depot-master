@@ -34,6 +34,11 @@ st.markdown("""
     }
     label, .stTextInput > div > input, .stSelectbox > div > div {
         font-size: 1.1rem !important;
+        text-align: right !important;
+        direction: rtl !important;
+    }
+    .stTextInput > div > input {
+        text-align: right !important;
     }
     button {
         width: 100%;
@@ -66,6 +71,17 @@ st.markdown("""
         text-align: center;
         font-weight: 600;
         color: #2c3e50;
+    }
+    .student-form {
+        direction: rtl;
+        text-align: right;
+    }
+    .student-form .stTextInput, 
+    .student-form .stSelectbox, 
+    .student-form .stDateInput,
+    .student-form .stFileUploader {
+        text-align: right;
+        direction: rtl;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -136,22 +152,21 @@ with st.container():
         if st.session_state.role == "طالب":
             st.success(f"✅ تم تسجيل الدخول كطالب - {st.session_state.username}")
             with st.form("student_form"):
+                st.markdown('<div class="student-form">', unsafe_allow_html=True)
                 st.subheader("📝 معلومات الطالب")
 
-                col1, col2 = st.columns(2)
-                with col1:
-                    reg_num = st.text_input("🔢 رقم التسجيل")
-                    first_name = st.text_input("👤 الاسم")
-                    section = st.selectbox("🏫 القسم", sections)
-                with col2:
-                    last_name = st.text_input("👤 اللقب")
-                    birth_date = st.date_input("📅 تاريخ الميلاد")
-                    supervisor = st.text_input("👨‍🏫 اسم المشرف")
-
+                reg_num = st.text_input("🔢 رقم التسجيل")
+                first_name = st.text_input("👤 الاسم")
+                last_name = st.text_input("👤 اللقب")
+                birth_date = st.date_input("📅 تاريخ الميلاد")
+                section = st.selectbox("🏫 القسم", sections)
+                supervisor = st.text_input("👨‍🏫 اسم المشرف")
                 title = st.text_input("📄 عنوان المذكرة")
                 file = st.file_uploader("📎 تحميل ملف المذكرة (PDF)", type=["pdf"])
 
                 submitted = st.form_submit_button("📤 إيداع")
+                st.markdown('</div>', unsafe_allow_html=True)
+                
                 if submitted:
                     if all([reg_num, first_name, last_name, section, supervisor, title, file]):
                         section_folder = os.path.join(UPLOAD_DIR, section)
