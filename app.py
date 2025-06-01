@@ -79,9 +79,10 @@ PASSWORDS = {
         "student3": "pass789"
     },
     "مشرف": {
-        "supervisor1": "sup123",
-        "supervisor2": "sup456",
-        "supervisor3": "sup789"
+        "Biologie": "sup123",
+        "Agronomie": "sup456",
+        "Alimentaire": "sup789"
+        "Ecologie": "sup789
     }
 }
 
