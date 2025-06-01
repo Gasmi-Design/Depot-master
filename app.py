@@ -6,7 +6,7 @@ from datetime import datetime
 # تهيئة إعدادات الصفحة
 st.set_page_config(page_title="منصة إيداع مذكرات التخرج", layout="centered")
 
-# === إعداد CSS لتحسين الواجهة ===
+# === إعداد CSS احترافي شامل ===
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
@@ -18,15 +18,16 @@ body, .main, .block-container {
     font-weight: bold !important;
     color: #003366 !important;
     font-family: 'Cairo', sans-serif !important;
+    background-color: #f0f4f8 !important;
 }
 
 /* تصميم الإطار العام */
 .main {
-    background-color: #f5f5f5;
+    background-color: #ffffff;
     padding: 3rem 2rem;
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    max-width: 900px;
+    border-radius: 15px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    max-width: 950px;
     margin: 2rem auto;
 }
 
@@ -39,16 +40,16 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 h1 {
-    font-size: 36px !important;
+    font-size: 38px !important;
     text-align: center;
 }
 
 h2 {
-    font-size: 28px !important;
+    font-size: 30px !important;
 }
 
 h3 {
-    font-size: 24px !important;
+    font-size: 26px !important;
 }
 
 h4 {
@@ -58,9 +59,13 @@ h4 {
 
 /* الحقول */
 .stTextInput input, .stSelectbox select, .stTextArea textarea {
-    font-size: 1.1rem !important;
+    font-size: 1.2rem !important;
     font-weight: bold !important;
     color: #003366 !important;
+    border-radius: 8px !important;
+    padding: 0.5rem 0.75rem !important;
+    background-color: #fdfdfd !important;
+    border: 1px solid #ccc !important;
 }
 
 /* الأزرار */
@@ -68,17 +73,17 @@ h4 {
     width: 100%;
     background-color: #4CAF50;
     color: white;
-    padding: 0.75rem;
+    padding: 0.85rem;
     font-size: 1.1rem;
     font-weight: bold;
-    border-radius: 6px;
+    border-radius: 8px;
     border: none;
     margin-top: 1rem;
     transition: background-color 0.3s;
 }
 
 .stButton button:hover {
-    background-color: #45a049;
+    background-color: #388e3c;
 }
 
 /* تسجيل الخروج */
@@ -89,12 +94,12 @@ h4 {
 
 /* بطاقات الإحصائيات */
 .metric-box {
-    background: #e8f5e9;
-    border-radius: 8px;
-    padding: 1rem;
+    background: #e3f2fd;
+    border-radius: 10px;
+    padding: 1.2rem;
     margin-bottom: 1rem;
     text-align: center;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     font-weight: bold;
     color: #003366;
 }
@@ -104,7 +109,7 @@ h4 {
     color: #2e7d32;
     background-color: #e8f5e9;
     padding: 1rem;
-    border-radius: 4px;
+    border-radius: 6px;
     margin-bottom: 1rem;
     font-weight: bold;
 }
@@ -113,14 +118,14 @@ h4 {
     color: #c62828;
     background-color: #ffebee;
     padding: 1rem;
-    border-radius: 4px;
+    border-radius: 6px;
     margin-bottom: 1rem;
     font-weight: bold;
 }
 
 /* رؤوس expander */
 .stExpanderHeader {
-    font-size: 1.1rem !important;
+    font-size: 1.2rem !important;
     font-weight: bold !important;
     color: #003366 !important;
 }
