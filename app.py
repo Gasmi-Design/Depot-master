@@ -112,8 +112,120 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+import streamlit as st
+import os
+import pandas as pd
+from datetime import datetime
+import shutil
 
-# قاعدة بيانات كلمات المرور
+st.set_page_config(page_title="منصة إيداع مذكرات التخرج", layout="centered")
+
+# === إعداد CSS لتحسين الواجهة ===
+st.markdown("""
+<style>
+    .main {
+        background-color: #f5f7fa;
+        padding: 3rem 2rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        max-width: 480px;
+        margin: 4rem auto 2rem auto;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: #333;
+    }
+    h1 {
+        text-align: center;
+        color: #2c3e50;
+        margin-bottom: 0.3rem;
+        font-weight: 700;
+    }
+    h4 {
+        text-align: center;
+        color: #34495e;
+        margin-top: 0;
+        margin-bottom: 2rem;
+        font-weight: 500;
+        line-height: 1.3;
+    }
+    label, .stTextInput > div > input, .stSelectbox > div > div {
+        font-size: 1.1rem !important;
+        text-align: right !important;
+        direction: rtl !important;
+    }
+    .stTextInput > div > input {
+        text-align: right !important;
+    }
+    button {
+        width: 100%;
+        background-color: #2980b9;
+        color: white;
+        padding: 0.65rem;
+        font-size: 1.1rem;
+        border-radius: 6px;
+        border: none;
+        margin-top: 1rem;
+    }
+    button:hover {
+        background-color: #3498db;
+        cursor: pointer;
+    }
+    .logout-btn {
+        margin-top: 2rem;
+        text-align: center;
+    }
+    .metric-container {
+        display: flex;
+        justify-content: space-around;
+        margin-bottom: 1rem;
+    }
+    .metric {
+        background: #eaf2f8;
+        border-radius: 8px;
+        padding: 1rem 1.5rem;
+        width: 30%;
+        text-align: center;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    .student-form {
+        direction: rtl;
+        text-align: right;
+    }
+    .student-form .stTextInput, 
+    .student-form .stSelectbox, 
+    .student-form .stDateInput,
+    .student-form .stFileUploader {
+        text-align: right;
+        direction: rtl;
+    }
+    .warning {
+        color: #e74c3c;
+        font-weight: bold;
+        text-align: center;
+        margin: 1rem 0;
+    }
+    .delete-btn {
+        background-color: #e74c3c !important;
+        margin-top: 0.5rem !important;
+    }
+    .delete-btn:hover {
+        background-color: #c0392b !important;
+    }
+    .file-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .memo-card {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        background: white;
+    }
+</style>
+""", unsafe_allow_html=True)
+
 PASSWORDS = {
     "طالب": {
         "student1": "pass123",
@@ -154,20 +266,21 @@ def is_student_registered(reg_num):
 
 def delete_memo(reg_num, section, filename):
     try:
-        # حذف الملف من نظام الملفات
         file_path = os.path.join(UPLOAD_DIR, section, filename)
         if os.path.exists(file_path):
             os.remove(file_path)
-        
-        # حذف السجل من قاعدة البيانات
         df = pd.read_csv(data_file)
         df = df[df["رقم التسجيل"] != reg_num]
         df.to_csv(data_file, index=False, encoding="utf-8")
-        
         return True
     except Exception as e:
         st.error(f"حدث خطأ أثناء حذف المذكرة: {str(e)}")
         return False
+
+def handle_delete(reg_num, section, filename):
+    success = delete_memo(reg_num, section, filename)
+    if success:
+        st.experimental_rerun()
 
 # الصفحة الرئيسية وواجهة المستخدم
 with st.container():
@@ -329,10 +442,9 @@ with st.container():
                                 st.error("ملف المذكرة غير موجود!")
                         
                         with col2:
-                            if st.button("🗑️ حذف", 
-                                       key=f"delete_{row['رقم التسجيل']}",
-                                       on_click=lambda r=row: [delete_memo(r['رقم التسجيل'], r['القسم'], r['اسم الملف']), st.experimental_rerun()],
-                                       type="primary"):
+         if st.button("🗑️ حذف", key=f"delete_{row['رقم التسجيل']}"):
+         handle_delete(row['رقم التسجيل'], row['القسم'], row['اسم الملف'])
+
                                 pass
 
         # زر الخروج في الأسفل
