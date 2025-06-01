@@ -139,10 +139,8 @@ with st.container():
         role = st.selectbox("👤 اختر نوع الدخول:", ["طالب", "مشرف"], key="login_role")
         
         with st.form("login_form"):
-            if role == "طالب":
-    username = st.text_input("🔢 رقم التسجيل", key="login_username")
-else:
-    username = st.text_input("👤 اسم المستخدم", key="login_username")
+            
+            username = st.text_input("👤 اسم المستخدم", key="login_username")
             password = st.text_input("🔐 كلمة المرور:", type="password", key="login_password")
             submitted = st.form_submit_button("تسجيل الدخول")
         
