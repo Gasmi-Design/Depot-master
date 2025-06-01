@@ -9,52 +9,61 @@ st.set_page_config(page_title="منصة إيداع مذكرات التخرج", l
 # === إعداد CSS لتحسين الواجهة ===
 st.markdown("""
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
+
 body, .main, .block-container {
     direction: rtl !important;
     text-align: right !important;
     font-size: 20px !important;
     font-weight: bold !important;
-    color: #003366 !important; /* أزرق داكن */
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+    color: #003366 !important;
+    font-family: 'Cairo', sans-serif !important;
 }
 
+/* تصميم الإطار العام */
 .main {
     background-color: #f5f5f5;
     padding: 3rem 2rem;
     border-radius: 10px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    max-width: 800px;
+    max-width: 900px;
     margin: 2rem auto;
 }
 
-h1 {
-    text-align: center;
+/* العناوين h1-h6 */
+h1, h2, h3, h4, h5, h6 {
     color: #003366 !important;
-    margin-bottom: 0.5rem;
     font-weight: 900 !important;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
+
+h1 {
     font-size: 36px !important;
+    text-align: center;
+}
+
+h2 {
+    font-size: 28px !important;
+}
+
+h3 {
+    font-size: 24px !important;
 }
 
 h4 {
-    text-align: center;
-    color: #003366 !important;
-    margin-top: 0;
-    margin-bottom: 2rem;
-    font-weight: 700 !important;
     font-size: 22px !important;
+    text-align: center;
 }
 
-.rtl-input {
-    text-align: right !important;
-    direction: rtl !important;
-}
-
+/* الحقول */
 .stTextInput input, .stSelectbox select, .stTextArea textarea {
     font-size: 1.1rem !important;
     font-weight: bold !important;
     color: #003366 !important;
 }
 
+/* الأزرار */
 .stButton button {
     width: 100%;
     background-color: #4CAF50;
@@ -72,11 +81,13 @@ h4 {
     background-color: #45a049;
 }
 
+/* تسجيل الخروج */
 .logout-btn {
     margin-top: 2rem;
     text-align: center;
 }
 
+/* بطاقات الإحصائيات */
 .metric-box {
     background: #e8f5e9;
     border-radius: 8px;
@@ -88,6 +99,7 @@ h4 {
     color: #003366;
 }
 
+/* الرسائل */
 .success-msg {
     color: #2e7d32;
     background-color: #e8f5e9;
@@ -104,6 +116,13 @@ h4 {
     border-radius: 4px;
     margin-bottom: 1rem;
     font-weight: bold;
+}
+
+/* رؤوس expander */
+.stExpanderHeader {
+    font-size: 1.1rem !important;
+    font-weight: bold !important;
+    color: #003366 !important;
 }
 </style>
 
