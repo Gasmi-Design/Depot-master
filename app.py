@@ -189,13 +189,7 @@ with st.container():
     if not st.session_state.logged_in:
         # واجهة تسجيل الدخول
         
-st.markdown(
-    "<h2 style='color: blue;'>👤 اختر نوع الدخول:</h2>",
-    unsafe_allow_html=True
-)
-
-# قائمة الاختيار
-role = st.selectbox("", ["طالب", "مشرف"], key="login_role")
+    role = st.selectbox("👤 اختر نوع الدخول:", ["طالب", "مشرف"], key="login_role")
         
         with st.form("login_form"):
             
