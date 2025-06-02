@@ -190,7 +190,7 @@ with st.container():
         # واجهة تسجيل الدخول
         
 st.markdown(
-    "<h4 style='color: blue;'>👤 اختر نوع الدخول:</h4>",
+    "<h2 style='color: blue;'>👤 اختر نوع الدخول:</h2>",
     unsafe_allow_html=True
 )
 
