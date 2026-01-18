@@ -147,7 +147,7 @@ PASSWORDS = {
         "imane.kerbouai": "Nf4@vR7xZ1qS",
         "meriem.nasri": "Sb7%pM3kH8uY",
         "mokhtar.guissous": "Vt6#bC9rQ2eW",
-        "farida.belkasmi": "Lp3$gT8nS5yZ",
+        "farida.belkasmi": "Lp3#vT8nS5yZ",
         "amel.bourahla": "Yz9@hF2mV6kP",
         "nacira.chourghal": "Hx2#rQ7tB4nM",
         "zine_el_abidine.fellahi": "Rm5%kL1wV8sD",
@@ -162,7 +162,7 @@ PASSWORDS = {
         "mahieddine.sebbane": "Nt8$gM1pQ6wS",
         "amel.hamma": "Lb3%vF7kR9zX",
         "mounir.saifi": "Vz5#pT2nL8qH",
-        "nadjat.iratni": "Gy9$kR4mS1wP",
+        "nadjat.iratni": "Gy9#rK4mS1wP",
         "lounis.semara": "Hp2%vB8tQ6nM",
         "faycal.bahlouli": "Kw7#rM3pV9sD",
         "imene.bakhouche": "Sa4$gT8nL1yF",
@@ -186,7 +186,7 @@ PASSWORDS = {
         "salima.tabti": "Pw3$kL8nV6yR",
         "mohamed.bibak": "Ng5%vT1pR9sZ",
         "asma.bouguerra": "Fc2#pK7mL8wY",
-        "abdellali.lazazga": "Qz6$gR3nT1vM",
+        "abdellali.lazazga": "Qz6#gR3nT1vM",
         "hamida.benradia": "Rt9%kL4pS2wH",
         "abdelouahab.diafat": "Mb3#vT8nK7qP",
         "khelifa.maamri": "Ld1$gP6nR9wS",
@@ -482,24 +482,49 @@ def format_datetime(dt: datetime):
     return dt.strftime("%Y-%m-%d %H:%M:%S")
 
 # ---------------------------------------
-# إدارة جلسة Streamlit بأمان (نمسح مفاتيح التطبيق المعروفة)
+# إدارة جلسة Streamlit بأمان (نُعيد تهيئة القيم الافتراضية بدل الحذف)
 # ---------------------------------------
 def reset_session():
     """
-    مسح مفاتيح التطبيق المعروفة لإزالة قيم النماذج (مثل 'supervisor') والعودة لحالة عدم تسجيل الدخول.
-    لا نحذف مفاتيح داخلية لِـ Streamlit.
+    إعادة تهيئة حالة الجلسة بأمان:
+    - لا نحذف مفاتيح الويجت، بل نعيد تعيين مفاتيح التطبيق المعروفة إلى قيم افتراضية.
+    - ثم نضبط حالة الدخول إلى False.
     """
-    app_keys = [
-        "login_role", "login_username", "login_password",
-        "first_name", "last_name", "reg_num", "birth_date",
-        "section", "supervisor", "title", "file",
-        "new_username", "new_password", "gen", "sel_student", "new_pwd", "gen2", "editing_memo_id",
-        # edit form keys
-        "e_first_name", "e_last_name", "e_reg_num", "e_birth_date", "e_section", "e_supervisor", "e_title", "e_file"
-    ]
-    for k in app_keys:
-        st.session_state.pop(k, None)
+    # قيم افتراضية آمنة للمفاتيح المعروفة
+    defaults = {
+        "login_role": "طالب",
+        "login_username": "",
+        "login_password": "",
+        "first_name": "",
+        "last_name": "",
+        "reg_num": "",
+        "birth_date": datetime.utcnow().date(),
+        "section": "",
+        "supervisor": "",
+        "title": "",
+        "file": None,
+        "new_username": "",
+        "new_password": "",
+        "gen": False,
+        "sel_student": "",
+        "new_pwd": "",
+        "gen2": False,
+        "editing_memo_id": None,
+        # مفاتيح نموذج التعديل
+        "e_first_name": "",
+        "e_last_name": "",
+        "e_reg_num": "",
+        "e_birth_date": datetime.utcnow().date(),
+        "e_section": "",
+        "e_supervisor": "",
+        "e_title": "",
+        "e_file": None
+    }
 
+    for k, v in defaults.items():
+        st.session_state[k] = v
+
+    # مفاتيح التحكم في الجلسة
     st.session_state.logged_in = False
     st.session_state.role = None
     st.session_state.username = None
@@ -531,9 +556,19 @@ with st.container():
             user = get_user(username)
             if user and user["role"] == role:
                 if verify_password(password, user["salt"], user["password_hash"]):
-                    # قبل إعادة التشغيل، امسح حقول النماذج لتجنب حمل القيم القديمة
-                    for k in ["first_name", "last_name", "reg_num", "birth_date", "section", "supervisor", "title", "file"]:
-                        st.session_state.pop(k, None)
+                    # ضبط قيم افتراضية لحقول النماذج (بدلاً من حذف المفاتيح) لتجنّب عدم تناسق الويجت أثناء rerun
+                    safe_defaults = {
+                        "first_name": "",
+                        "last_name": "",
+                        "reg_num": "",
+                        "birth_date": datetime.utcnow().date(),
+                        "section": "",
+                        "supervisor": "",
+                        "title": "",
+                        "file": None
+                    }
+                    for k, v in safe_defaults.items():
+                        st.session_state[k] = v
 
                     st.session_state.logged_in = True
                     st.session_state.role = role
@@ -648,7 +683,7 @@ with st.container():
                         st.session_state.pop("editing_memo_id", None)
                         st.experimental_rerun()
 
-            # قيود: لا نسمح بإيداع أكثر من مذكرة واحدة لكل طالب
+            # قيود: لا نسمح بإيداع أكثر من مذكرة واحدة لكل طالب (يمكن تعديل هذا السلوك لاحقًا)
             if user_memos:
                 st.info("ℹ️ لديك مذكرة مودعة مسبقًا. لا يُسمح بإيداع أكثر من مذكرة واحدة. يمكنك تعديل المذكرة الحالية أو حذفها ثم إنشاء أخرى.")
             else:
