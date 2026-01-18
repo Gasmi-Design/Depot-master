@@ -131,6 +131,9 @@ h4 {
 </style>
 
 """, unsafe_allow_html=True)
+
+# قاعدة بيانات كلمات المرور (ملاحظة: تخزين كلمات المرور في النص صريح ليس آمناً للإنتاج)
+# تم تحديث كلمات مرور المشرفين هنا إلى حسابات مستخدمة (username: password).
 PASSWORDS = {
     "طالب": {
         "student1": "pass123",
@@ -138,196 +141,98 @@ PASSWORDS = {
         "student3": "pass789"
     },
     "مشرف": {
-        BELLOULA;SALIMA;salima.belloula;Qr8$kL2pT9wA
-KERBOUAI;Imane;imane.kerbouai;Nf4@vR7xZ1qS
-NASRI;Meriem;meriem.nasri;Sb7%pM3kH8uY
-GUISSOUS;Mokhtar;mokhtar.guissous;Vt6#bC9rQ2eW
-BELKASMI;FARIDA;farida.belkasmi;Lp3$gT8nS5yZ
-BOURAHLA;AMEL;amel.bourahla;Yz9@hF2mV6kP
-CHOURGHAL;Nacira;nacira.chourghal;Hx2#rQ7tB4nM
-FELLAHI;ZINE EL ABIDINE;zine_el_abidine.fellahi;Rm5%kL1wV8sD
-BOULKROUNE;Hasna;hasna.boulkroune;Ct4$gN9pR2zF
-TABTI;Dahbia;dahbia.tabti;Pw8#dM6sK1yQ
-SAIAD;AMIRA;amira.saiad;Uz3%vB7nL5cH
-KERMICHE;SIHEM;sihem.kermiche;Kb9@tF2rQ6wX
-ZAAFOUR;Mohamed djalil;mohamed_djalil.zaafour;Md6#pS8vR3yL
-Mebarki;Radia;radia.mebarki;Rf2$kH7nT9wG
-AIT MECHEDAL;MOULOUD;mouloud.ait_mechedal;Qy7%vB3mL8sA
-MEZITI;ASMA;asma.meziti;Jp4#rK9tV2hZ
-Sebbane;Mahieddine;mahieddine.sebbane;Nt8$gM1pQ6wS
-HAMMA;AMEL;amel.hamma;Lb3%vF7kR9zX
-SAIFI;Mounir;mounir.saifi;Vz5#pT2nL8qH
-IRATNI;Nadjat;nadjat.iratni;Gy9$kR4mS1wP
-SEMARA;Lounis;lounis.semara;Hp2%vB8tQ6nM
-BAHLOULI;Faycal;faycal.bahlouli;Kw7#rM3pV9sD
-BAKHOUCHE;Imene;imene.bakhouche;Sa4$gT8nL1yF
-DEFFAF;Ammar;ammar.deffaf;Pd6%kH2rQ7wN
-BOUMAIZA;Souad;souad.boumaiza;Rx3#vM9pT5zL
-BENTABET;Abdelouahab;abdelouahab.bentabet;Vz1$kP7nL4qS
-MEZDOUR;Hichem;hichem.mezdour;Mb8%rT3vK9yH
-BENSEGHIR;HADJIRA;hadjira.benseghir;Qf2#pL6nS7wZ
-BENBOUGUERRA;Nawel;nawel.benbouguerra;Lc9$gM1rV8tP
-BECHAMI;Sofiane;sofiane.bechami;Hz4%vK7pN2qM
-MAHLEB;ANISSA;anissa.mahleb;Yp6#rT3mL8wS
-SOUAGUI;YASMINA;yasmina.souagui;Nx9$kB2pV7rD
-ZIAD;Abdelaziz;abdelaziz.ziad;Gt3%vM8nL1qP
-Loukil;Bachir;bachir.loukil;Rb7#pK4tS9wZ
-TEKKOUK;Fatiha;fatiha.tekkouk;Pd2$gM6nL8yH
-Ferahtia ;Amel;amel.ferahtia;Qm8%rT1pV3sK
-loucif;lynda;lynda.loucif;Sx4#kB9vM2qL
-TOUATI;NOUREDDINE;noureddine.touati;Hz7$pR3mT6wN
-HIHAT;Soraya;soraya.hihat;Ly1%vK8nP4qS
-BOUSSAHEL;SOULEF;soulef.boussahel;Vb9#rM2tK7wD
-TABTI;SALIMA;salima.tabti;Pw3$kL8nV6yR
-BIBAK;MOHAMED;mohamed.bibak;Ng5%vT1pR9sZ
-BOUGUERRA;Asma;asma.bouguerra;Fc2#pK7mL8wY
-LAZAZGA;Abdellali;abdellali.lazazga;Qz6$gR3nT1vM
-BENRADIA;HAMIDA;hamida.benradia;Rt9%kL4pS2wH
-DIAFAT;Abdelouahab;abdelouahab.diafat;Mb3#vT8nK7qP
-MAAMRI;KHELIFA;khelifa.maamri;Ld1$gP6nR9wS
-DEHIRI;MOUNIRA;mounira.dehiri;Sh8%rK2vM4qZ
-TIAIBA;Mohamed;mohamed.tiaiba;Py5#kT9nL3wV
-GUERGOUR;HASSINA;hassina.guergour;Nq2%vR7pK8sM
-SALAMANI;Amel;amel.salamani;Kb9#pL1vT6wD
-SEDRATI;Tahar;tahar.sedrati;Vz4$gM8nP3qS
-SADRATI;NOUARI;nouari.sadrati;Fy7%rK2pL9wH
-KHOUDOUR;Abdelmalek;abdelmalek.khoudour;Qd3#vT6nR8yP
-KELALECHE;HIZIA;hizia.kelaleche;Rm1%kP7nL4wS
-ALILI;DAHMANE;dahmane.alili;Tb8#vK2rM5qZ
-REGOUI;CHELBIA;chelbia.regoui;Lc6$gR3pT9wN
-BELALMI;NOR EL HOUDA;nor_el_houda.belalmi;Sa2%vK8nP7qM
-BOUBELLOUTA;Tahar;tahar.boubellouta;Hz9#pL4mT1wD
-BOUTANA;Wissem;wissem.boutana;Qp3%kR7nV8yS
-ZIOUCHE;SIHEM;sihem.ziouche;Mb6#vT1pL9qZ
-ABED;Hanane;hanane.abed;Rx8$gK2nP4wM
-FATMI;WIDAD;widad.fatmi;Ly5%rM9pT1qS
-MERZOUKI;YOUCEF;youcef.merzouki;Nz7#kV3pL6wD
-BELHADJ;Mohamed Tayeb;mohamed_tayeb.belhadj;Gq2%vR8nM4pS
-SAYAH;TAHAR;tahar.sayah;Pf9#kT1vL6wZ
-ROUAIGUIA;NADIA;nadia.rouaiguia;Sd3%gM7pK2qH
-FORTAS;Bilal;bilal.fortas;Qw6#rL9nT1yP
-AMARA KORBA;RAOUF;raouf.amara_korba;Vz1%pK8mR4wS
-BOUMERFEG;Sabah;sabah.boumerfeg;Lk7#vT2pN9qD
-BENSOUILAH;TAKIYEDDINE;takiyeddine.bensouilah;My4%gR8nL1pS
-BOULAOUAD;Belkacem aymen;belkacem_aymen.boulaouad;Np9#kT3vL6wZ
-TAMINE;Milouda;milouda.tamine;Rb2%vM7pK8qS
-MOUMENI;OUISSEM;ouissem.moumeni;Hx5#rL1nT9wD
-ZERROUG;AMINA;amina.zerroug;Qn8%kP3vM6yS
-BENBOUGUERRA;Khalissa;khalissa.benbouguerra;Sz4#gR9nL1pD
-BOUZID;Chawki abdallah;chawki_abdallah.bouzid;Vb7%kT2pM8wQ
-BELGUERRI;Hemza;hemza.belguerri;Lf3#vR6nK9pS
-LAOUFI;HADJER;hadjer.laoufi;Py1%gM8nL4qZ
-CHENOUF;NADIA SAFIA;nadia_safia.chenouf;Mw9#rT3pK6wD
-DERARDJA;Abdelghani;abdelghani.derardja;Hz2%kL7nV5qS
-HARIZI;Toufik;toufik.harizi;Rb8#pM1vK4wZ
-MOUTASSEM;Dahou;dahou.moutassem;Qs3%vT9nL6pH
-MERIBAI;Abdelmaalek;abdelmaalek.meribai;Lp5#gR2kT8wS
-BENSEFIA;Sofiane;sofiane.bensefia;Vz6%pM1nL9qD
-MESSAI;Chafik redha;chafik_redha.messai;Ny4#kT7vR2wS
-BAAZIZ;Naima;naima.baaziz;Gh9%rL3pK6wD
-BENOUADAH;ZOHRA;zohra.benouadah;Px2#vM8nL4qS
-BELLIK;Juba;juba.bellik;Rf7%kT1pM9wZ
-MEKHALFI;Hamoudi;hamoudi.mekhalfi;Sd3#vR6nL8qP
-SID;Nassim;nassim.sid;Qk8%pL2vM5wH
+        "salima.belloula": "Qr8$kL2pT9wA",
+        "imane.kerbouai": "Nf4@vR7xZ1qS",
+        "meriem.nasri": "Sb7%pM3kH8uY",
+        "mokhtar.guissous": "Vt6#bC9rQ2eW",
+        "farida.belkasmi": "Lp3$gT8nS5yZ",
+        "amel.bourahla": "Yz9@hF2mV6kP",
+        "nacira.chourghal": "Hx2#rQ7tB4nM",
+        "zine_el_abidine.fellahi": "Rm5%kL1wV8sD",
+        "hasna.boulkroune": "Ct4$gN9pR2zF",
+        "dahbia.tabti": "Pw8#dM6sK1yQ",
+        "amira.saiad": "Uz3%vB7nL5cH",
+        "sihem.kermiche": "Kb9@tF2rQ6wX",
+        "mohamed_djalil.zaafour": "Md6#pS8vR3yL",
+        "radia.mebarki": "Rf2$kH7nT9wG",
+        "mouloud.ait_mechedal": "Qy7%vB3mL8sA",
+        "asma.meziti": "Jp4#rK9tV2hZ",
+        "mahieddine.sebbane": "Nt8$gM1pQ6wS",
+        "amel.hamma": "Lb3%vF7kR9zX",
+        "mounir.saifi": "Vz5#pT2nL8qH",
+        "nadjat.iratni": "Gy9$kR4mS1wP",
+        "lounis.semara": "Hp2%vB8tQ6nM",
+        "faycal.bahlouli": "Kw7#rM3pV9sD",
+        "imene.bakhouche": "Sa4$gT8nL1yF",
+        "ammar.deffaf": "Pd6%kH2rQ7wN",
+        "souad.boumaiza": "Rx3#vM9pT5zL",
+        "abdelouahab.bentabet": "Vz1$kP7nL4qS",
+        "hichem.mezdour": "Mb8%rT3vK9yH",
+        "hadjira.benseghir": "Qf2#pL6nS7wZ",
+        "nawel.benbouguerra": "Lc9$gM1rV8tP",
+        "sofiane.bechami": "Hz4%vK7pN2qM",
+        "anissa.mahleb": "Yp6#rT3mL8wS",
+        "yasmina.souagui": "Nx9$kB2pV7rD",
+        "abdelaziz.ziad": "Gt3%vM8nL1qP",
+        "bachir.loukil": "Rb7#pK4tS9wZ",
+        "fatiha.tekkouk": "Pd2$gM6nL8yH",
+        "amel.ferahtia": "Qm8%rT1pV3sK",
+        "lynda.loucif": "Sx4#kB9vM2qL",
+        "noureddine.touati": "Hz7$pR3mT6wN",
+        "soraya.hihat": "Ly1%vK8nP4qS",
+        "soulef.boussahel": "Vb9#rM2tK7wD",
+        "salima.tabti": "Pw3$kL8nV6yR",
+        "mohamed.bibak": "Ng5%vT1pR9sZ",
+        "asma.bouguerra": "Fc2#pK7mL8wY",
+        "abdellali.lazazga": "Qz6$gR3nT1vM",
+        "hamida.benradia": "Rt9%kL4pS2wH",
+        "abdelouahab.diafat": "Mb3#vT8nK7qP",
+        "khelifa.maamri": "Ld1$gP6nR9wS",
+        "mounira.dehiri": "Sh8%rK2vM4qZ",
+        "mohamed.tiaiba": "Py5#kT9nL3wV",
+        "hassina.guergour": "Nq2%vR7pK8sM",
+        "amel.salamani": "Kb9#pL1vT6wD",
+        "tahar.sedrati": "Vz4$gM8nP3qS",
+        "nouari.sadrati": "Fy7%rK2pL9wH",
+        "abdelmalek.khoudour": "Qd3#vT6nR8yP",
+        "hizia.kelaleche": "Rm1%kP7nL4wS",
+        "dahmane.alili": "Tb8#vK2rM5qZ",
+        "chelbia.regoui": "Lc6$gR3pT9wN",
+        "nor_el_houda.belalmi": "Sa2%vK8nP7qM",
+        "tahar.boubellouta": "Hz9#pL4mT1wD",
+        "wissem.boutana": "Qp3%kR7nV8yS",
+        "sihem.ziouche": "Mb6#vT1pL9qZ",
+        "hanane.abed": "Rx8$gK2nP4wM",
+        "widad.fatmi": "Ly5%rM9pT1qS",
+        "youcef.merzouki": "Nz7#kV3pL6wD",
+        "mohamed_tayeb.belhadj": "Gq2%vR8nM4pS",
+        "tahar.sayah": "Pf9#kT1vL6wZ",
+        "nadia.rouaiguia": "Sd3%gM7pK2qH",
+        "bilal.fortas": "Qw6#rL9nT1yP",
+        "raouf.amara_korba": "Vz1%pK8mR4wS",
+        "sabah.boumerfeg": "Lk7#vT2pN9qD",
+        "takiyeddine.bensouilah": "My4%gR8nL1pS",
+        "belkacem_aymen.boulaouad": "Np9#kT3vL6wZ",
+        "milouda.tamine": "Rb2%vM7pK8qS",
+        "ouissem.moumeni": "Hx5#rL1nT9wD",
+        "amina.zerroug": "Qn8%kP3vM6yS",
+        "khalissa.benbouguerra": "Sz4#gR9nL1pD",
+        "chawki_abdallah.bouzid": "Vb7%kT2pM8wQ",
+        "hemza.belguerri": "Lf3#vR6nK9pS",
+        "hadjer.laoufi": "Py1%gM8nL4qZ",
+        "nadia_safia.chenouf": "Mw9#rT3pK6wD",
+        "abdelghani.derardja": "Hz2%kL7nV5qS",
+        "toufik.harizi": "Rb8#pM1vK4wZ",
+        "dahou.moutassem": "Qs3%vT9nL6pH",
+        "abdelmaalek.meribai": "Lp5#gR2kT8wS",
+        "sofiane.bensefia": "Vz6%pM1nL9qD",
+        "chafik_redha.messai": "Ny4#kT7vR2wS",
+        "naima.baaziz": "Gh9%rL3pK6wD",
+        "zohra.benouadah": "Px2#vM8nL4qS",
+        "juba.bellik": "Rf7%kT1pM9wZ",
+        "hamoudi.mekhalfi": "Sd3#vR6nL8qP",
+        "nassim.sid": "Qk8%pL2vM5wH"
     }
-}
-
-name=app_passwords_snippet.py
-# استبدل أو أدمج هذا القاموس مع PASSWORDS في app.py
-PASSWORDS["مشرف"] = {
-    "salima.belloula": "Qr8$kL2pT9wA",
-    "imane.kerbouai": "Nf4@vR7xZ1qS",
-    "meriem.nasri": "Sb7%pM3kH8uY",
-    "mokhtar.guissous": "Vt6#bC9rQ2eW",
-    "farida.belkasmi": "Lp3$gT8nS5yZ",
-    "amel.bourahla": "Yz9@hF2mV6kP",
-    "nacira.chourghal": "Hx2#rQ7tB4nM",
-    "zine_el_abidine.fellahi": "Rm5%kL1wV8sD",
-    "hasna.boulkroune": "Ct4$gN9pR2zF",
-    "dahbia.tabti": "Pw8#dM6sK1yQ",
-    "amira.saiad": "Uz3%vB7nL5cH",
-    "sihem.kermiche": "Kb9@tF2rQ6wX",
-    "mohamed_djalil.zaafour": "Md6#pS8vR3yL",
-    "radia.mebarki": "Rf2$kH7nT9wG",
-    "mouloud.ait_mechedal": "Qy7%vB3mL8sA",
-    "asma.meziti": "Jp4#rK9tV2hZ",
-    "mahieddine.sebbane": "Nt8$gM1pQ6wS",
-    "amel.hamma": "Lb3%vF7kR9zX",
-    "mounir.saifi": "Vz5#pT2nL8qH",
-    "nadjat.iratni": "Gy9$kR4mS1wP",
-    "lounis.semara": "Hp2%vB8tQ6nM",
-    "faycal.bahlouli": "Kw7#rM3pV9sD",
-    "imene.bakhouche": "Sa4$gT8nL1yF",
-    "ammar.deffaf": "Pd6%kH2rQ7wN",
-    "souad.boumaiza": "Rx3#vM9pT5zL",
-    "abdelouahab.bentabet": "Vz1$kP7nL4qS",
-    "hichem.mezdour": "Mb8%rT3vK9yH",
-    "hadjira.benseghir": "Qf2#pL6nS7wZ",
-    "nawel.benbouguerra": "Lc9$gM1rV8tP",
-    "sofiane.bechami": "Hz4%vK7pN2qM",
-    "anissa.mahleb": "Yp6#rT3mL8wS",
-    "yasmina.souagui": "Nx9$kB2pV7rD",
-    "abdelaziz.ziad": "Gt3%vM8nL1qP",
-    "bachir.loukil": "Rb7#pK4tS9wZ",
-    "fatiha.tekkouk": "Pd2$gM6nL8yH",
-    "amel.ferahtia": "Qm8%rT1pV3sK",
-    "lynda.loucif": "Sx4#kB9vM2qL",
-    "noureddine.touati": "Hz7$pR3mT6wN",
-    "soraya.hihat": "Ly1%vK8nP4qS",
-    "soulef.boussahel": "Vb9#rM2tK7wD",
-    "salima.tabti": "Pw3$kL8nV6yR",
-    "mohamed.bibak": "Ng5%vT1pR9sZ",
-    "asma.bouguerra": "Fc2#pK7mL8wY",
-    "abdellali.lazazga": "Qz6$gR3nT1vM",
-    "hamida.benradia": "Rt9%kL4pS2wH",
-    "abdelouahab.diafat": "Mb3#vT8nK7qP",
-    "khelifa.maamri": "Ld1$gP6nR9wS",
-    "mounira.dehiri": "Sh8%rK2vM4qZ",
-    "mohamed.tiaiba": "Py5#kT9nL3wV",
-    "hassina.guergour": "Nq2%vR7pK8sM",
-    "amel.salamani": "Kb9#pL1vT6wD",
-    "tahar.sedrati": "Vz4$gM8nP3qS",
-    "nouari.sadrati": "Fy7%rK2pL9wH",
-    "abdelmalek.khoudour": "Qd3#vT6nR8yP",
-    "hizia.kelaleche": "Rm1%kP7nL4wS",
-    "dahmane.alili": "Tb8#vK2rM5qZ",
-    "chelbia.regoui": "Lc6$gR3pT9wN",
-    "nor_el_houda.belalmi": "Sa2%vK8nP7qM",
-    "tahar.boubellouta": "Hz9#pL4mT1wD",
-    "wissem.boutana": "Qp3%kR7nV8yS",
-    "sihem.ziouche": "Mb6#vT1pL9qZ",
-    "hanane.abed": "Rx8$gK2nP4wM",
-    "widad.fatmi": "Ly5%rM9pT1qS",
-    "youcef.merzouki": "Nz7#kV3pL6wD",
-    "mohamed_tayeb.belhadj": "Gq2%vR8nM4pS",
-    "tahar.sayah": "Pf9#kT1vL6wZ",
-    "nadia.rouaiguia": "Sd3%gM7pK2qH",
-    "bilal.fortas": "Qw6#rL9nT1yP",
-    "raouf.amara_korba": "Vz1%pK8mR4wS",
-    "sabah.boumerfeg": "Lk7#vT2pN9qD",
-    "takiyeddine.bensouilah": "My4%gR8nL1pS",
-    "belkacem_aymen.boulaouad": "Np9#kT3vL6wZ",
-    "milouda.tamine": "Rb2%vM7pK8qS",
-    "ouissem.moumeni": "Hx5#rL1nT9wD",
-    "amina.zerroug": "Qn8%kP3vM6yS",
-    "khalissa.benbouguerra": "Sz4#gR9nL1pD",
-    "chawki_abdallah.bouzid": "Vb7%kT2pM8wQ",
-    "hemza.belguerri": "Lf3#vR6nK9pS",
-    "hadjer.laoufi": "Py1%gM8nL4qZ",
-    "nadia_safia.chenouf": "Mw9#rT3pK6wD",
-    "abdelghani.derardja": "Hz2%kL7nV5qS",
-    "toufik.harizi": "Rb8#pM1vK4wZ",
-    "dahou.moutassem": "Qs3%vT9nL6pH",
-    "abdelmaalek.meribai": "Lp5#gR2kT8wS",
-    "sofiane.bensefia": "Vz6%pM1nL9qD",
-    "chafik_redha.messai": "Ny4#kT7vR2wS",
-    "naima.baaziz": "Gh9%rL3pK6wD",
-    "zohra.benouadah": "Px2#vM8nL4qS",
-    "juba.bellik": "Rf7%kT1pM9wZ",
-    "hamoudi.mekhalfi": "Sd3#vR6nL8qP",
-    "nassim.sid": "Qk8%pL2vM5wH"
-}
-ملاحظات مهمة:
 }
 
 # إعداد مجلد التحميل وملف البيانات
@@ -511,7 +416,7 @@ with st.container():
             with col3:
                 st.markdown(f'<div class="metric-box">عدد المشرفين<br><b>{df["المشرف"].nunique() if not df.empty else 0}</b></div>', unsafe_allow_html=True)
 
-            # أدوات التصفية
+            # أدوات التصفي��
             st.subheader("🔍 تصفية المذكرات")
 
             col1, col2 = st.columns(2)
