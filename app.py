@@ -299,18 +299,31 @@ def save_memo(record: dict):
     shutil.move(tmp_path, DATA_FILE)
 
 def reset_session():
-    # إعادة تهيئة مفاتيح الجلسة الأساسية
-    keys = list(st.session_state.keys())
-    for k in keys:
-        del st.session_state[k]
+    """
+    إعادة تهيئة حالة الجلسة بأمان: لا نحذف مفاتيح Streamlit الداخلية أو مفاتيح الويجت،
+    بل نعيد فقط تعيين مفاتيح الحالة الخاصة بالتوثيق للتأكد من أن st.experimental_rerun()
+    لن يرفع AttributeError بسبب حذف مفاتيح داخلية.
+    """
+    # فقط ضبط علامات الجلسة الأساسية
     st.session_state.logged_in = False
     st.session_state.role = None
     st.session_state.username = None
 
-# تهيئة حالة الجلسة إذا لم تكن موجودة
+# تهيئة حالة الجلسة إذا لم تكن موجودة (بدون حذف أي مفاتيح)
 if 'logged_in' not in st.session_state:
-    reset_session()
+    st.session_state.logged_in = False
+    st.session_state.role = None
+    st.session_state.username = None
 
+    # حذف المفاتيح المؤقتة إن وجدت
+    for k in app_keys:
+        if k in st.session_state:
+            del st.session_state[k]
+
+    # تهيئة مفاتيح الحالة الأساسية للتطبيق
+    st.session_state.logged_in = False
+    st.session_state.role = None
+    st.session_state.username = None
 # الأقسام المتاحة
 sections = ["العلوم البيولوجية", "العلوم الفلاحية", "علوم التغذية", "علم البيئة والمحيط"]
 
