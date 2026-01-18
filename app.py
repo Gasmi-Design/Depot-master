@@ -311,14 +311,18 @@ def init_db():
         if "مشرف" in PASSWORDS:
             for uname, pwd in PASSWORDS["مشرف"].items():
                 salt, hsh = hash_password(pwd)
-                cur.execute(
-                    "INSERT INTO users (username, role, password_hash, salt, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?)",
-                    (uname, "مشرف", hsh, salt, "system", datetime.utcnow().isoformat())
-                )
+                try:
+                    # استخدم INSERT OR IGNORE لتجنب IntegrityError إذا ظهر الإدخال مسبقًا
+                    cur.execute(
+                        "INSERT OR IGNORE INTO users (username, role, password_hash, salt, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+                        (uname, "مشرف", hsh, salt, "system", datetime.utcnow().isoformat())
+                    )
+                except sqlite3.IntegrityError:
+                    # نتجاهل أي خطأ تكراري حفاظًا على الاستقرار
+                    continue
             conn.commit()
 
     conn.close()
-
 init_db()
 
 # ---------------------------------------
