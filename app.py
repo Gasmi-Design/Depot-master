@@ -131,16 +131,14 @@ h4 {
 </style>
 
 """, unsafe_allow_html=True)
-
-# قاع��ة بيانات كلمات المرور (ملاحظة: تخزين كلمات المرور في النص صريح ليس آمناً للإنتاج)
-Copilot said: جميل — أنشأت أسماء مستخدمين تلقائية (بصيغة
-جميل — أنشأت أسماء مستخدمين تلقائية (بصيغة firstname.lastname مع استبدال الفراغات بـ underscore حيث يلزم) وقمت بتوليد كلمات مرور عشوائية وقوية (12 حرف: أحرف كبيرة/صغيرة/أرقام/رموز) لكل أستاذ من الملف الذي أرسلته.
-
-مرفق هنا ملف CSV جاهز للتحميل والاستخدام، ثم قطعة شيفرة Python لتحديث القاموس PASSWORDS["مشرف"] في ملف app.py (ملاحظة مهمة في الأسفل).
-
-name=professors_with_passwords.csv
-Nom;Prenom;username;password
-BELLOULA;SALIMA;salima.belloula;Qr8$kL2pT9wA
+PASSWORDS = {
+    "طالب": {
+        "student1": "pass123",
+        "student2": "pass456",
+        "student3": "pass789"
+    },
+    "مشرف": {
+        BELLOULA;SALIMA;salima.belloula;Qr8$kL2pT9wA
 KERBOUAI;Imane;imane.kerbouai;Nf4@vR7xZ1qS
 NASRI;Meriem;meriem.nasri;Sb7%pM3kH8uY
 GUISSOUS;Mokhtar;mokhtar.guissous;Vt6#bC9rQ2eW
@@ -231,7 +229,8 @@ BENOUADAH;ZOHRA;zohra.benouadah;Px2#vM8nL4qS
 BELLIK;Juba;juba.bellik;Rf7%kT1pM9wZ
 MEKHALFI;Hamoudi;hamoudi.mekhalfi;Sd3#vR6nL8qP
 SID;Nassim;nassim.sid;Qk8%pL2vM5wH
-وإليك قطعة Python جاهزة للصق داخل app.py (استبدل الجزء القديم الخاص بـ PASSWORDS["مشرف"] بهذا الجزء). لاحظ: المفاتيح هنا هي أسماء المستخدمين (username) التي ولّدناها:
+    }
+}
 
 name=app_passwords_snippet.py
 # استبدل أو أدمج هذا القاموس مع PASSWORDS في app.py
