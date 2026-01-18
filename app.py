@@ -177,7 +177,7 @@ PASSWORDS = {
         "yasmina.souagui": "Nx9$kB2pV7rD",
         "abdelaziz.ziad": "Gt3%vM8nL1qP",
         "bachir.loukil": "Rb7#pK4tS9wZ",
-        "fatiha.tekkouk": "Pd2$gM6nL8yH",
+        "fatiha.tekkouk": "Pd2%gM6nL8yH",
         "amel.ferahtia": "Qm8%rT1pV3sK",
         "lynda.loucif": "Sx4#kB9vM2qL",
         "noureddine.touati": "Hz7$pR3mT6wN",
@@ -648,66 +648,70 @@ with st.container():
                         st.session_state.pop("editing_memo_id", None)
                         st.experimental_rerun()
 
-            # خلاف ذلك (أو بعد الحذف/إتمام التعديل) نوفر نموذج إيداع جديد
-            st.subheader("📝 إيداع مذكرة جديدة")
-            with st.form("memo_form", clear_on_submit=True):
-                col1, col2 = st.columns(2)
-                with col1:
-                    first_name = st.text_input("الاسم", key="first_name")
-                with col2:
-                    last_name = st.text_input("اللقب", key="last_name")
+            # قيود: لا نسمح بإيداع أكثر من مذكرة واحدة لكل طالب
+            if user_memos:
+                st.info("ℹ️ لديك مذكرة مودعة مسبقًا. لا يُسمح بإيداع أكثر من مذكرة واحدة. يمكنك تعديل المذكرة الحالية أو حذفها ثم إنشاء أخرى.")
+            else:
+                # نوفر نموذج إيداع جديد فقط إذا لم يكن لدى الطالب مذكرة مسبقًا
+                st.subheader("📝 إيداع مذكرة جديدة")
+                with st.form("memo_form", clear_on_submit=True):
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        first_name = st.text_input("الاسم", key="first_name")
+                    with col2:
+                        last_name = st.text_input("اللقب", key="last_name")
 
-                reg_num = st.text_input("رقم التسجيل", key="reg_num")
-                birth_date = st.date_input("تاريخ الميلاد", key="birth_date")
-                section = st.selectbox("القسم", sections, key="section")
+                    reg_num = st.text_input("رقم التسجيل", key="reg_num")
+                    birth_date = st.date_input("تاريخ الميلاد", key="birth_date")
+                    section = st.selectbox("القسم", sections, key="section")
 
-                conn = get_db_conn()
-                cur = conn.cursor()
-                cur.execute("SELECT username FROM users WHERE role = 'مشرف' ORDER BY username")
-                supervisors_db = [r["username"] for r in cur.fetchall()]
-                conn.close()
+                    conn = get_db_conn()
+                    cur = conn.cursor()
+                    cur.execute("SELECT username FROM users WHERE role = 'مشرف' ORDER BY username")
+                    supervisors_db = [r["username"] for r in cur.fetchall()]
+                    conn.close()
 
-                supervisor_options = [""] + supervisors_db
-                supervisor = st.selectbox("اسم المشرف", supervisor_options, key="supervisor")
+                    supervisor_options = [""] + supervisors_db
+                    supervisor = st.selectbox("اسم المشرف", supervisor_options, key="supervisor")
 
-                title = st.text_input("عنوان المذكرة", key="title")
-                file = st.file_uploader("رفع ملف المذكرة (PDF فقط)", type=["pdf"], key="file")
+                    title = st.text_input("عنوان المذكرة", key="title")
+                    file = st.file_uploader("رفع ملف المذكرة (PDF فقط)", type=["pdf"], key="file")
 
-                submitted = st.form_submit_button("إيداع المذكرة")
+                    submitted = st.form_submit_button("إيداع المذكرة")
 
-                if submitted:
-                    if not all([reg_num, first_name, last_name, section, supervisor, title, file]):
-                        st.error("⚠️ يرجى تعبئة جميع الحقول ورفع الملف. تأكد من اختيار المشرف من القائمة.")
-                    else:
-                        section_dir = UPLOAD_DIR / safe_filename(section)
-                        section_dir.mkdir(parents=True, exist_ok=True)
-                        filename = f"{reg_num}_{safe_filename(file.name)}"
-                        file_path = section_dir / filename
-                        try:
-                            with open(file_path, "wb") as f:
-                                f.write(file.getbuffer())
-                        except Exception as e:
-                            st.error(f"خطأ عند حفظ الملف: {e}")
+                    if submitted:
+                        if not all([reg_num, first_name, last_name, section, supervisor, title, file]):
+                            st.error("⚠️ يرجى تعبئة جميع الحقول ورفع الملف. تأكد من اختيار المشرف من القائمة.")
                         else:
-                            memo_data = {
-                                "رقم التسجيل": reg_num,
-                                "الاسم": first_name,
-                                "اللقب": last_name,
-                                "تاريخ الميلاد": birth_date.strftime("%Y-%m-%d"),
-                                "القسم": section,
-                                "المشرف": supervisor,
-                                "عنوان المذكرة": title,
-                                "اسم الملف": filename,
-                                "مسار الملف": str(file_path),
-                                "مقدم": st.session_state.username,
-                                "تاريخ الإيداع": format_datetime(datetime.utcnow())
-                            }
+                            section_dir = UPLOAD_DIR / safe_filename(section)
+                            section_dir.mkdir(parents=True, exist_ok=True)
+                            filename = f"{reg_num}_{safe_filename(file.name)}"
+                            file_path = section_dir / filename
                             try:
-                                save_memo_db(memo_data)
-                                st.success("✅ تم إيداع المذكرة بنجاح")
-                                st.experimental_rerun()
+                                with open(file_path, "wb") as f:
+                                    f.write(file.getbuffer())
                             except Exception as e:
-                                st.error(f"فشل في حفظ بيانات المذكرة: {e}")
+                                st.error(f"خطأ عند حفظ الملف: {e}")
+                            else:
+                                memo_data = {
+                                    "رقم التسجيل": reg_num,
+                                    "الاسم": first_name,
+                                    "اللقب": last_name,
+                                    "تاريخ الميلاد": birth_date.strftime("%Y-%m-%d"),
+                                    "القسم": section,
+                                    "المشرف": supervisor,
+                                    "عنوان المذكرة": title,
+                                    "اسم الملف": filename,
+                                    "مسار الملف": str(file_path),
+                                    "مقدم": st.session_state.username,
+                                    "تاريخ الإيداع": format_datetime(datetime.utcnow())
+                                }
+                                try:
+                                    save_memo_db(memo_data)
+                                    st.success("✅ تم إيداع المذكرة بنجاح")
+                                    st.experimental_rerun()
+                                except Exception as e:
+                                    st.error(f"فشل في حفظ بيانات المذكرة: {e}")
 
         elif st.session_state.role == "مشرف":
             st.success(f"مرحباً بك {st.session_state.username} (مشرف)")
@@ -754,7 +758,7 @@ with st.container():
                             submit_reset = st.form_submit_button("تعيين كلمة المرور")
                         if submit_reset:
                             if not new_pwd:
-                                st.error("⚠️ أدخل ��لمة مرور جديدة")
+                                st.error("⚠️ أدخل كلمة مرور جديدة")
                             else:
                                 try:
                                     update_user_password(sel_student, new_pwd)
