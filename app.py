@@ -162,7 +162,7 @@ PASSWORDS = {
         "mahieddine.sebbane": "Nt8$gM1pQ6wS",
         "amel.hamma": "Lb3%vF7kR9zX",
         "mounir.saifi": "Vz5#pT2nL8qH",
-        "nadjat.iratni": "Gy9$kR4mS1wP",
+        "nadjat.iratni": "Gy9$gR4mS1wP",
         "lounis.semara": "Hp2%vB8tQ6nM",
         "faycal.bahlouli": "Kw7#rM3pV9sD",
         "imene.bakhouche": "Sa4$gT8nL1yF",
@@ -304,25 +304,21 @@ def init_db():
     """)
     conn.commit()
 
-    # إذا جدول المستخدمين فارغ — ننقل مشرفي PASSWORDS إلى DB (مع هاش)
-    cur.execute("SELECT COUNT(*) as cnt FROM users")
-    cnt = cur.fetchone()["cnt"]
-    if cnt == 0:
-        if "مشرف" in PASSWORDS:
-            for uname, pwd in PASSWORDS["مشرف"].items():
-                salt, hsh = hash_password(pwd)
-                try:
-                    # استخدم INSERT OR IGNORE لتجنب IntegrityError إذا ظهر الإدخال مسبقًا
-                    cur.execute(
-                        "INSERT OR IGNORE INTO users (username, role, password_hash, salt, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?)",
-                        (uname, "مشرف", hsh, salt, "system", datetime.utcnow().isoformat())
-                    )
-                except sqlite3.IntegrityError:
-                    # نتجاهل أي خطأ تكراري حفاظًا على الاستقرار
-                    continue
-            conn.commit()
-
+    # إدراج مشرفي البداية بأمان (تجاهل الإدخالات المكررة)
+    if "مشرف" in PASSWORDS:
+        for uname, pwd in PASSWORDS["مشرف"].items():
+            salt, hsh = hash_password(pwd)
+            try:
+                cur.execute(
+                    "INSERT OR IGNORE INTO users (username, role, password_hash, salt, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+                    (uname, "مشرف", hsh, salt, "system", datetime.utcnow().isoformat())
+                )
+            except sqlite3.IntegrityError:
+                # في حال حدث سباق أو إدخال مكرر، نتجاهله
+                pass
+    conn.commit()
     conn.close()
+
 init_db()
 
 # ---------------------------------------
@@ -419,10 +415,22 @@ def format_datetime(dt: datetime):
     return dt.strftime("%Y-%m-%d %H:%M:%S")
 
 # ---------------------------------------
-# إدارة جلسة Streamlit بأمان (لا نحذف مفاتيح طرية)
+# إدارة جلسة Streamlit بأمان (نمسح مفاتيح التطبيق المعروفة)
 # ---------------------------------------
 def reset_session():
-    # إعادة تهيئة مفاتيح الحالة الأساسية فقط
+    """
+    مسح مفاتيح التطبيق المعروفة لإزالة قيم النماذج (مثل 'supervisor') والعودة لحالة عدم تسجيل الدخول.
+    لا نحذف مفاتيح داخلية لِـ Streamlit.
+    """
+    app_keys = [
+        "login_role", "login_username", "login_password",
+        "first_name", "last_name", "reg_num", "birth_date",
+        "section", "supervisor", "title", "file",
+        "new_username", "new_password", "gen", "sel_student", "new_pwd", "gen2"
+    ]
+    for k in app_keys:
+        st.session_state.pop(k, None)
+
     st.session_state.logged_in = False
     st.session_state.role = None
     st.session_state.username = None
@@ -454,6 +462,10 @@ with st.container():
             user = get_user(username)
             if user and user["role"] == role:
                 if verify_password(password, user["salt"], user["password_hash"]):
+                    # قبل إعادة التشغيل، امسح حقول النماذج لتجنب حمل القيم القديمة
+                    for k in ["first_name", "last_name", "reg_num", "birth_date", "section", "supervisor", "title", "file"]:
+                        st.session_state.pop(k, None)
+
                     st.session_state.logged_in = True
                     st.session_state.role = role
                     st.session_state.username = username
@@ -480,7 +492,18 @@ with st.container():
                 reg_num = st.text_input("رقم التسجيل", key="reg_num")
                 birth_date = st.date_input("تاريخ الميلاد", key="birth_date")
                 section = st.selectbox("القسم", sections, key="section")
-                supervisor = st.text_input("اسم المشرف", key="supervisor")
+
+                # ===== استبدال حقل المشرف بحقل منسدِل من قاعدة المستخدمين (المشرفون) =====
+                conn = get_db_conn()
+                cur = conn.cursor()
+                cur.execute("SELECT username FROM users WHERE role = 'مشرف' ORDER BY username")
+                supervisors_db = [r["username"] for r in cur.fetchall()]
+                conn.close()
+
+                supervisor_options = [""] + supervisors_db
+                supervisor = st.selectbox("اسم المشرف", supervisor_options, key="supervisor")
+                # ======================================================================
+
                 title = st.text_input("عنوان المذكرة", key="title")
                 file = st.file_uploader("رفع ملف المذكرة (PDF فقط)", type=["pdf"], key="file")
 
@@ -488,7 +511,7 @@ with st.container():
 
                 if submitted:
                     if not all([reg_num, first_name, last_name, section, supervisor, title, file]):
-                        st.error("⚠️ يرجى تعبئة جميع الحقول ورفع الملف")
+                        st.error("⚠️ يرجى تعبئة جميع الحقول ورفع الملف. تأكد من اختيار المشرف من القائمة.")
                     else:
                         # حفظ الملف
                         section_dir = UPLOAD_DIR / safe_filename(section)
@@ -594,7 +617,12 @@ with st.container():
             with col1:
                 selected_section = st.selectbox("القسم", ["الكل"] + sections)
             with col2:
-                supervisors = ["الكل"] + sorted(list({r["supervisor"] for r in memos if r["supervisor"]}))
+                # احصل على المشرفين من جدول users لعرض جميع المشرفين
+                conn = get_db_conn()
+                cur = conn.cursor()
+                cur.execute("SELECT username FROM users WHERE role = 'مشرف' ORDER BY username")
+                supervisors = ["الكل"] + [r["username"] for r in cur.fetchall()]
+                conn.close()
                 selected_supervisor = st.selectbox("المشرف", supervisors)
 
             filtered = load_memos(section=selected_section, supervisor=selected_supervisor)
