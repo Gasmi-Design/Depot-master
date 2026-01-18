@@ -6,11 +6,16 @@ from datetime import datetime
 from pathlib import Path
 import tempfile
 import shutil
+import sqlite3
+import hashlib
+import hmac
+import secrets
 
-# تهيئة إعدادات الصفحة
+# ---------------------------------------
+# تكوين الصفحة وCSS (عربي، RTL)
+# ---------------------------------------
 st.set_page_config(page_title="منصة إيداع مذكرات التخرج", layout="centered")
 
-# === إعداد CSS لتحسين الواجهة ===
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
@@ -132,14 +137,11 @@ h4 {
 
 """, unsafe_allow_html=True)
 
-# قاعدة بيانات كلمات المرور (ملاحظة: تخزين كلمات المرور في النص صريح ليس آمناً للإنتاج)
-# تم تحديث كلمات مرور المشرفين هنا إلى حسابات مستخدمة (username: password).
+# ---------------------------------------
+# بيانات أولية: قائمة المشرفين (كما في النسخة الأصلية)
+# سيتم نقل هذه الحسابات إلى قاعدة بيانات SQLite مشفّرة عند التشغيل الأول
+# ---------------------------------------
 PASSWORDS = {
-    "طالب": {
-        "student1": "pass123",
-        "student2": "pass456",
-        "student3": "pass789"
-    },
     "مشرف": {
         "salima.belloula": "Qr8$kL2pT9wA",
         "imane.kerbouai": "Nf4@vR7xZ1qS",
@@ -235,32 +237,169 @@ PASSWORDS = {
     }
 }
 
-# إعداد مجلد التحميل وملف البيانات
+# ---------------------------------------
+# دوال تشفير كلمات المرور باستخدام PBKDF2 (موجودة في المكتبة القياسية — لا تعتمد على حزم خارجية)
+# ---------------------------------------
+PBKDF2_ITERATIONS = 200_000  # قيمة آمنة لمعظم الاستخدامات
+SALT_BYTES = 16
+
+def hash_password(password: str):
+    """
+    توليد salt وهاش مستمد عبر PBKDF2-HMAC-SHA256
+    نعيد tuple (salt_hex, hash_hex)
+    """
+    salt = secrets.token_bytes(SALT_BYTES)
+    hash_bytes = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, PBKDF2_ITERATIONS)
+    return salt.hex(), hash_bytes.hex()
+
+def verify_password(password: str, salt_hex: str, hash_hex: str) -> bool:
+    salt = bytes.fromhex(salt_hex)
+    expected = bytes.fromhex(hash_hex)
+    calc = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, PBKDF2_ITERATIONS)
+    return hmac.compare_digest(calc, expected)
+
+# ---------------------------------------
+# إعداد قاعدة بيانات SQLite لتخزين المستخدمين والمذكرات
+# ---------------------------------------
 BASE_DIR = Path.cwd()
+DB_FILE = BASE_DIR / "app.db"
 UPLOAD_DIR = BASE_DIR / "uploaded_memos"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
-DATA_FILE = BASE_DIR / "data.csv"
+def get_db_conn():
+    conn = sqlite3.connect(str(DB_FILE), check_same_thread=False)
+    conn.row_factory = sqlite3.Row
+    return conn
 
-# أعمدة ملف البيانات المتوقعة
-CSV_COLUMNS = [
-    "رقم التسجيل", "الاسم", "اللقب", "تاريخ الميلاد",
-    "القسم", "المشرف", "عنوان المذكرة", "اسم الملف", "تاريخ الإيداع"
-]
+def init_db():
+    conn = get_db_conn()
+    cur = conn.cursor()
+    # جدول المستخدمين
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS users (
+        username TEXT PRIMARY KEY,
+        role TEXT NOT NULL, -- 'مشرف' أو 'طالب'
+        password_hash TEXT NOT NULL,
+        salt TEXT NOT NULL,
+        created_by TEXT,
+        created_at TEXT
+    )
+    """)
+    # جدول المذكرات
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS memos (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        reg_num TEXT,
+        first_name TEXT,
+        last_name TEXT,
+        birth_date TEXT,
+        section TEXT,
+        supervisor TEXT,
+        title TEXT,
+        file_name TEXT,
+        file_path TEXT,
+        submitted_by TEXT,
+        created_at TEXT
+    )
+    """)
+    conn.commit()
 
-# تهيئة ملف البيانات إذا لم يكن موجوداً أو فارغاً
-if not DATA_FILE.exists() or DATA_FILE.stat().st_size == 0:
-    df_init = pd.DataFrame(columns=CSV_COLUMNS)
-    # استخدم utf-8-sig لتحسين التوافق مع Excel إذا لزم الأمر
-    df_init.to_csv(DATA_FILE, index=False, encoding="utf-8-sig")
+    # إذا جدول المستخدمين فارغ — ننقل مشرفي PASSWORDS إلى DB (مع هاش)
+    cur.execute("SELECT COUNT(*) as cnt FROM users")
+    cnt = cur.fetchone()["cnt"]
+    if cnt == 0:
+        if "مشرف" in PASSWORDS:
+            for uname, pwd in PASSWORDS["مشرف"].items():
+                salt, hsh = hash_password(pwd)
+                cur.execute(
+                    "INSERT INTO users (username, role, password_hash, salt, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+                    (uname, "مشرف", hsh, salt, "system", datetime.utcnow().isoformat())
+                )
+            conn.commit()
 
-# وظائف مساعدة
+    conn.close()
+
+init_db()
+
+# ---------------------------------------
+# دوال إدارة المستخدمين والمذكرات في DB
+# ---------------------------------------
+def get_user(username: str):
+    conn = get_db_conn()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM users WHERE username = ?", (username,))
+    row = cur.fetchone()
+    conn.close()
+    return row
+
+def create_user(username: str, password: str, role: str, created_by: str = None):
+    if get_user(username):
+        raise ValueError("اسم المستخدم موجود بالفعل")
+    salt, hsh = hash_password(password)
+    conn = get_db_conn()
+    cur = conn.cursor()
+    cur.execute("INSERT INTO users (username, role, password_hash, salt, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+                (username, role, hsh, salt, created_by, datetime.utcnow().isoformat()))
+    conn.commit()
+    conn.close()
+
+def update_user_password(username: str, new_password: str):
+    if not get_user(username):
+        raise ValueError("المستخدم غير موجود")
+    salt, hsh = hash_password(new_password)
+    conn = get_db_conn()
+    cur = conn.cursor()
+    cur.execute("UPDATE users SET password_hash = ?, salt = ? WHERE username = ?", (hsh, salt, username))
+    conn.commit()
+    conn.close()
+
+def save_memo_db(record: dict):
+    conn = get_db_conn()
+    cur = conn.cursor()
+    cur.execute("""
+    INSERT INTO memos (reg_num, first_name, last_name, birth_date, section, supervisor, title, file_name, file_path, submitted_by, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        record.get("رقم التسجيل"),
+        record.get("الاسم"),
+        record.get("اللقب"),
+        record.get("تاريخ الميلاد"),
+        record.get("القسم"),
+        record.get("المشرف"),
+        record.get("عنوان المذكرة"),
+        record.get("اسم الملف"),
+        record.get("مسار الملف"),
+        record.get("مقدم"),
+        record.get("تاريخ الإيداع")
+    ))
+    conn.commit()
+    conn.close()
+
+def load_memos(section: str = None, supervisor: str = None):
+    conn = get_db_conn()
+    cur = conn.cursor()
+    q = "SELECT * FROM memos"
+    params = []
+    filters = []
+    if section and section != "الكل":
+        filters.append("section = ?")
+        params.append(section)
+    if supervisor and supervisor != "الكل":
+        filters.append("supervisor = ?")
+        params.append(supervisor)
+    if filters:
+        q += " WHERE " + " AND ".join(filters)
+    q += " ORDER BY created_at DESC"
+    cur.execute(q, params)
+    rows = cur.fetchall()
+    conn.close()
+    return rows
+
+# ---------------------------------------
+# دوال مساعدة صغيرة
+# ---------------------------------------
 def safe_filename(name: str) -> str:
-    """
-    ترجع اسم ملف آمن عن طريق استبدال الأحرف غير المسموح بها.
-    نحافظ على الامتداد كما هو.
-    """
-    name = os.path.basename(name)  # إزالة أي أجزاء مسار
+    name = os.path.basename(name)
     parts = name.rsplit(".", 1)
     if len(parts) == 2:
         base, ext = parts
@@ -268,73 +407,38 @@ def safe_filename(name: str) -> str:
     else:
         base = parts[0]
         ext = ""
-    # السماح للأحرف والحروف والأرقام والشرطات والشرطات السفلية والمسافات المحدودة
     base = re.sub(r"[^\w\s\-]", "", base)
     base = re.sub(r"\s+", "_", base)
-    # تقليم الطول لتجنب مشاكل النظام
     return base[:200] + ext
 
-def load_data() -> pd.DataFrame:
-    try:
-        df = pd.read_csv(DATA_FILE, encoding="utf-8-sig")
-        # التأكد من وجود الأعمدة المتوقعة
-        for col in CSV_COLUMNS:
-            if col not in df.columns:
-                df[col] = ""
-        return df[CSV_COLUMNS]
-    except Exception:
-        # إذا فشل القراءة، نعيد DataFrame فارغ بالأعمدة المطلوبة
-        return pd.DataFrame(columns=CSV_COLUMNS)
+def format_datetime(dt: datetime):
+    return dt.strftime("%Y-%m-%d %H:%M:%S")
 
-def save_memo(record: dict):
-    """
-    يضيف سجل جديد إلى ملف CSV بطريقة أكثر أماناً (كتابة مؤقتة ثم استبدال).
-    """
-    df = load_data()
-    df = pd.concat([df, pd.DataFrame([record])], ignore_index=True)
-    # كتابة إلى ملف مؤقت ثم استبدال
-    with tempfile.NamedTemporaryFile(delete=False, mode="w", encoding="utf-8-sig", newline="") as tmp:
-        df.to_csv(tmp.name, index=False, encoding="utf-8-sig")
-        tmp_path = tmp.name
-    shutil.move(tmp_path, DATA_FILE)
-
+# ---------------------------------------
+# إدارة جلسة Streamlit بأمان (لا نحذف مفاتيح طرية)
+# ---------------------------------------
 def reset_session():
-    """
-    إعادة تهيئة حالة الجلسة بأمان: لا نحذف مفاتيح Streamlit الداخلية أو مفاتيح الويجت،
-    بل نعيد فقط تعيين مفاتيح الحالة الخاصة بالتوثيق للتأكد من أن st.experimental_rerun()
-    لن يرفع AttributeError بسبب حذف مفاتيح داخلية.
-    """
-    # فقط ضبط علامات الجلسة الأساسية
+    # إعادة تهيئة مفاتيح الحالة الأساسية فقط
     st.session_state.logged_in = False
     st.session_state.role = None
     st.session_state.username = None
 
-# تهيئة حالة الجلسة إذا لم تكن موجودة (بدون حذف أي مفاتيح)
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
     st.session_state.role = None
     st.session_state.username = None
 
-    # حذف المفاتيح المؤقتة إن وجدت
-    for k in app_keys:
-        if k in st.session_state:
-            del st.session_state[k]
-
-    # تهيئة مفاتيح الحالة الأساسية للتطبيق
-    st.session_state.logged_in = False
-    st.session_state.role = None
-    st.session_state.username = None
-# الأقسام المتاحة
+# ---------------------------------------
+# محتوى الواجهة
+# ---------------------------------------
 sections = ["العلوم البيولوجية", "العلوم الفلاحية", "علوم التغذية", "علم البيئة والمحيط"]
 
-# واجهة المستخدم الرئيسية
 with st.container():
     st.markdown('<div class="main">', unsafe_allow_html=True)
     st.markdown("<h1>📚 منصة إيداع مذكرات التخرج</h1>", unsafe_allow_html=True)
     st.markdown("<h4>جامعة محمد البشير الإبراهيمي - برج بوعريريج<br>كلية علوم الطبيعة والحياة وعلوم الأرض والكون</h4>", unsafe_allow_html=True)
 
     if not st.session_state.logged_in:
-        # واجهة تسجيل الدخول
         role = st.selectbox("👤 اختر نوع الدخول:", ["طالب", "مشرف"], key="login_role")
 
         with st.form("login_form"):
@@ -343,22 +447,20 @@ with st.container():
             submitted = st.form_submit_button("تسجيل الدخول")
 
         if submitted:
-            valid = False
-            if role == "طالب":
-                valid = username in PASSWORDS.get("طالب", {}) and password == PASSWORDS["طالب"].get(username)
-            elif role == "مشرف":
-                valid = username in PASSWORDS.get("مشرف", {}) and password == PASSWORDS["مشرف"].get(username)
-
-            if valid:
-                st.session_state.logged_in = True
-                st.session_state.role = role
-                st.session_state.username = username
-                st.experimental_rerun()
+            user = get_user(username)
+            if user and user["role"] == role:
+                if verify_password(password, user["salt"], user["password_hash"]):
+                    st.session_state.logged_in = True
+                    st.session_state.role = role
+                    st.session_state.username = username
+                    st.experimental_rerun()
+                else:
+                    st.error("⚠️ اسم المستخدم أو كلمة السر غير صحيحة")
             else:
-                st.error("⚠️ اسم المستخدم أو كلمة السر غير صحيحة")
+                st.error("⚠️ اسم المستخدم غير موجود أو الدور غير صحيح")
 
     else:
-        # واجهة بعد تسجيل الدخول
+        # بعد تسجيل الدخول
         if st.session_state.role == "طالب":
             st.success(f"مرحباً بك {st.session_state.username} (طالب)")
 
@@ -384,13 +486,12 @@ with st.container():
                     if not all([reg_num, first_name, last_name, section, supervisor, title, file]):
                         st.error("⚠️ يرجى تعبئة جميع الحقول ورفع الملف")
                     else:
-                        # حفظ الملف بشكل آمن
+                        # حفظ الملف
                         section_dir = UPLOAD_DIR / safe_filename(section)
                         section_dir.mkdir(parents=True, exist_ok=True)
                         filename = f"{reg_num}_{safe_filename(file.name)}"
                         file_path = section_dir / filename
                         try:
-                            # اكتب الملف إلى المسار
                             with open(file_path, "wb") as f:
                                 f.write(file.getbuffer())
                         except Exception as e:
@@ -405,10 +506,12 @@ with st.container():
                                 "المشرف": supervisor,
                                 "عنوان المذكرة": title,
                                 "اسم الملف": filename,
-                                "تاريخ الإيداع": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                                "مسار الملف": str(file_path),
+                                "مقدم": st.session_state.username,
+                                "تاريخ الإيداع": format_datetime(datetime.utcnow())
                             }
                             try:
-                                save_memo(memo_data)
+                                save_memo_db(memo_data)
                                 st.success("✅ تم إيداع المذكرة بنجاح")
                             except Exception as e:
                                 st.error(f"فشل في حفظ بيانات المذكرة: {e}")
@@ -416,59 +519,102 @@ with st.container():
         elif st.session_state.role == "مشرف":
             st.success(f"مرحباً بك {st.session_state.username} (مشرف)")
 
-            # عرض الإحصائيات
+            st.subheader("🛠️ إدارة حسابات الطلبة")
+            with st.expander("إنشاء حساب طالب جديد"):
+                with st.form("create_student_form"):
+                    new_username = st.text_input("اسم المستخدم للطالب (مثال: student123)")
+                    new_password = st.text_input("كلمة المرور الأولية (سوف تُخزَّن مشفّرة)", type="password")
+                    gen = st.checkbox("توليد كلمة مرور آمنة تلقائياً")
+                    if gen:
+                        # توليد كلمة مرور آمنة بسيطة (يمكن تحسينها لاحقاً)
+                        new_password = secrets.token_urlsafe(10)
+                        st.info(f"كلمة المرور المولدة: {new_password} - الرجاء تسليمها للطالب آمنًا")
+
+                    submit_create = st.form_submit_button("إنشاء الحساب")
+                if submit_create:
+                    if not new_username or not new_password:
+                        st.error("⚠️ الرجاء إدخال اسم مستخدم وكلمة مرور")
+                    else:
+                        try:
+                            create_user(new_username, new_password, "طالب", created_by=st.session_state.username)
+                            st.success("✅ تم إنشاء حساب الطالب بنجاح — سلّم بيانات الدخول للطالب بأمان")
+                        except ValueError as e:
+                            st.error(f"❗ {e}")
+                        except Exception as e:
+                            st.error(f"فشل إنشاء الحساب: {e}")
+
+            with st.expander("إدارة كلمات مرور الطلبة"):
+                conn = get_db_conn()
+                cur = conn.cursor()
+                cur.execute("SELECT username FROM users WHERE role = 'طالب' ORDER BY username")
+                students = [r["username"] for r in cur.fetchall()]
+                conn.close()
+                if students:
+                    sel_student = st.selectbox("اختَر طالباً لتغيير كلمة المرور", [""] + students)
+                    if sel_student:
+                        with st.form("reset_pwd_form"):
+                            new_pwd = st.text_input("كلمة المرور الجديدة", type="password")
+                            gen2 = st.checkbox("توليد كلمة مرور آمنة تلقائياً", key="gen2")
+                            if gen2:
+                                new_pwd = secrets.token_urlsafe(10)
+                                st.info(f"كلمة المرور المولدة: {new_pwd} - سلّمها للطالب بأمان")
+                            submit_reset = st.form_submit_button("تعيين كلمة المرور")
+                        if submit_reset:
+                            if not new_pwd:
+                                st.error("⚠️ أدخل كلمة مرور جديدة")
+                            else:
+                                try:
+                                    update_user_password(sel_student, new_pwd)
+                                    st.success("✅ تم تحديث كلمة المرور — سلّمها للطالب بأمان")
+                                except Exception as e:
+                                    st.error(f"فشل التحديث: {e}")
+                else:
+                    st.info("لا يوجد طلاب مسجلين حتى الآن")
+
+            # لوحة تحكم المذكرات
             st.subheader("📊 لوحة التحكم")
-
-            df = load_data()
-
+            memos = load_memos()
             col1, col2, col3 = st.columns(3)
             with col1:
-                st.markdown(f'<div class="metric-box">المذكرات المودعة<br><b>{len(df)}</b></div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="metric-box">المذكرات المودعة<br><b>{len(memos)}</b></div>', unsafe_allow_html=True)
             with col2:
-                st.markdown(f'<div class="metric-box">عدد الأقسام<br><b>{df["القسم"].nunique() if not df.empty else 0}</b></div>', unsafe_allow_html=True)
+                sections_count = len(set([r["section"] for r in memos if r["section"]]))
+                st.markdown(f'<div class="metric-box">عدد الأقسام<br><b>{sections_count}</b></div>', unsafe_allow_html=True)
             with col3:
-                st.markdown(f'<div class="metric-box">عدد المشرفين<br><b>{df["المشرف"].nunique() if not df.empty else 0}</b></div>', unsafe_allow_html=True)
+                supervisors_count = len(set([r["supervisor"] for r in memos if r["supervisor"]]))
+                st.markdown(f'<div class="metric-box">عدد المشرفين<br><b>{supervisors_count}</b></div>', unsafe_allow_html=True)
 
-            # أدوات التصفي��
+            # تصفية و عرض
             st.subheader("🔍 تصفية المذكرات")
-
             col1, col2 = st.columns(2)
             with col1:
                 selected_section = st.selectbox("القسم", ["الكل"] + sections)
             with col2:
-                supervisors = ["الكل"]
-                if not df.empty:
-                    supervisors += sorted(df["المشرف"].dropna().unique().tolist())
+                supervisors = ["الكل"] + sorted(list({r["supervisor"] for r in memos if r["supervisor"]}))
                 selected_supervisor = st.selectbox("المشرف", supervisors)
 
-            # تطبيق التصفية
-            filtered_df = df.copy()
-            if selected_section != "الكل":
-                filtered_df = filtered_df[filtered_df["القسم"] == selected_section]
-            if selected_supervisor != "الكل":
-                filtered_df = filtered_df[filtered_df["المشرف"] == selected_supervisor]
+            filtered = load_memos(section=selected_section, supervisor=selected_supervisor)
 
-            # عرض النتائج
-            st.subheader(f"📄 المذكرات ({len(filtered_df)})")
-
-            if filtered_df.empty:
-                st.info("لا توجد مذكرات متاحة حسب معايير التصفية المحددة")
+            st.subheader(f"📄 المذكرات ({len(filtered)})")
+            if not filtered:
+                st.info("لا توجد مذكرات حسب معايير التصفية")
             else:
-                for _, row in filtered_df.iterrows():
-                    with st.expander(f"{row['عنوان المذكرة']} - {row['الاسم']} {row['اللقب']}"):
-                        st.markdown(f"**رقم التسجيل:** {row['رقم التسجيل']}")
-                        st.markdown(f"**القسم:** {row['القسم']}")
-                        st.markdown(f"**المشرف:** {row['المشرف']}")
-                        st.markdown(f"**تاريخ الإيداع:** {row['تاريخ الإيداع']}")
-                        file_path = UPLOAD_DIR / safe_filename(row['القسم']) / row['اسم الملف']
-                        if file_path.exists():
+                for row in filtered:
+                    with st.expander(f"{row['title']} - {row['first_name']} {row['last_name']}"):
+                        st.markdown(f"**رقم التسجيل:** {row['reg_num']}")
+                        st.markdown(f"**القسم:** {row['section']}")
+                        st.markdown(f"**المشرف:** {row['supervisor']}")
+                        st.markdown(f"**مقدم:** {row['submitted_by']}")
+                        st.markdown(f"**تاريخ الإيداع:** {row['created_at']}")
+                        file_path = row['file_path']
+                        if file_path and os.path.exists(file_path):
                             try:
                                 with open(file_path, "rb") as f:
                                     file_bytes = f.read()
                                 st.download_button(
                                     label="تحميل المذكرة",
                                     data=file_bytes,
-                                    file_name=row['اسم الملف'],
+                                    file_name=row['file_name'],
                                     mime="application/pdf"
                                 )
                             except Exception as e:
