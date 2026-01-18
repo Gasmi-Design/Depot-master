@@ -162,7 +162,7 @@ PASSWORDS = {
         "mahieddine.sebbane": "Nt8$gM1pQ6wS",
         "amel.hamma": "Lb3%vF7kR9zX",
         "mounir.saifi": "Vz5#pT2nL8qH",
-        "nadjat.iratni": "Gy9$gR4mS1wP",
+        "nadjat.iratni": "Gy9$kR4mS1wP",
         "lounis.semara": "Hp2%vB8tQ6nM",
         "faycal.bahlouli": "Kw7#rM3pV9sD",
         "imene.bakhouche": "Sa4$gT8nL1yF",
@@ -396,6 +396,73 @@ def load_memos(section: str = None, supervisor: str = None):
     return rows
 
 # ---------------------------------------
+# دوال لإدارة مذكرات المستخدم (عرض/تحديث/حذف)
+# ---------------------------------------
+def get_memos_by_user(username: str):
+    conn = get_db_conn()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM memos WHERE submitted_by = ? ORDER BY created_at DESC", (username,))
+    rows = cur.fetchall()
+    conn.close()
+    return rows
+
+def get_memo_by_id(memo_id: int):
+    conn = get_db_conn()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM memos WHERE id = ?", (memo_id,))
+    row = cur.fetchone()
+    conn.close()
+    return row
+
+def update_memo_db(memo_id: int, updated: dict):
+    """
+    updated expects keys matching columns: reg_num, first_name, last_name, birth_date,
+    section, supervisor, title, file_name, file_path
+    """
+    conn = get_db_conn()
+    cur = conn.cursor()
+    cols = []
+    params = []
+    mapping = {
+        "reg_num": "reg_num",
+        "first_name": "first_name",
+        "last_name": "last_name",
+        "birth_date": "birth_date",
+        "section": "section",
+        "supervisor": "supervisor",
+        "title": "title",
+        "file_name": "file_name",
+        "file_path": "file_path"
+    }
+    for k, col in mapping.items():
+        if k in updated:
+            cols.append(f"{col} = ?")
+            params.append(updated[k])
+    if not cols:
+        conn.close()
+        return
+    params.append(memo_id)
+    q = f"UPDATE memos SET {', '.join(cols)} WHERE id = ?"
+    cur.execute(q, params)
+    conn.commit()
+    conn.close()
+
+def delete_memo_db(memo_id: int):
+    # يحذف السجل والملف المربوط إن وُجد
+    m = get_memo_by_id(memo_id)
+    if m and m["file_path"]:
+        try:
+            if os.path.exists(m["file_path"]):
+                os.remove(m["file_path"])
+        except Exception:
+            pass
+    conn = get_db_conn()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM memos WHERE id = ?", (memo_id,))
+    conn.commit()
+    conn.close()
+
+# ---------------------------------------
 # دوال مساعدة صغيرة
 # ---------------------------------------
 def safe_filename(name: str) -> str:
@@ -426,7 +493,9 @@ def reset_session():
         "login_role", "login_username", "login_password",
         "first_name", "last_name", "reg_num", "birth_date",
         "section", "supervisor", "title", "file",
-        "new_username", "new_password", "gen", "sel_student", "new_pwd", "gen2"
+        "new_username", "new_password", "gen", "sel_student", "new_pwd", "gen2", "editing_memo_id",
+        # edit form keys
+        "e_first_name", "e_last_name", "e_reg_num", "e_birth_date", "e_section", "e_supervisor", "e_title", "e_file"
     ]
     for k in app_keys:
         st.session_state.pop(k, None)
@@ -480,9 +549,108 @@ with st.container():
         if st.session_state.role == "طالب":
             st.success(f"مرحباً بك {st.session_state.username} (طالب)")
 
-            with st.form("memo_form", clear_on_submit=True):
-                st.subheader("📝 نموذج إيداع المذكرة")
+            # أولاً: اعرض المذكرات التي أرسلها هذا المستخدم مسبقًا (إن وجدت)
+            user_memos = get_memos_by_user(st.session_state.username)
+            if user_memos:
+                st.subheader("📂 مذكراتك المودعة")
+                for m in user_memos:
+                    with st.expander(f"{m['title']} — {m['first_name']} {m['last_name']} (#{m['id']})"):
+                        st.markdown(f"**رقم التسجيل:** {m['reg_num']}")
+                        st.markdown(f"**القسم:** {m['section']}")
+                        st.markdown(f"**المشرف:** {m['supervisor']}")
+                        st.markdown(f"**تاريخ الإيداع:** {m['created_at']}")
+                        if m['file_path'] and os.path.exists(m['file_path']):
+                            try:
+                                with open(m['file_path'], "rb") as f:
+                                    file_bytes = f.read()
+                                st.download_button("تحميل المذكرة", data=file_bytes, file_name=m['file_name'], mime="application/pdf")
+                            except Exception as e:
+                                st.error(f"خطأ عند تحضير الملف للتحميل: {e}")
+                        else:
+                            st.warning("الملف غير متوفر على الخادم")
 
+                        # أزرار تعديل / حذف
+                        col_a, col_b = st.columns([1,1])
+                        if col_a.button("✏️ تعديل هذه المذكرة", key=f"edit_{m['id']}"):
+                            # احفظ id الذي سيتم تعديله في حالة الجلسة ونعدّل العرض
+                            st.session_state.editing_memo_id = m['id']
+                            st.experimental_rerun()
+                        if col_b.button("🗑️ حذف المذكرة", key=f"del_{m['id']}"):
+                            delete_memo_db(m['id'])
+                            st.success("تم حذف المذكرة")
+                            st.experimental_rerun()
+
+            # إذا الطالب يحق له تعديل سجل محدد نعرض نموذج التعديل
+            if 'editing_memo_id' in st.session_state and st.session_state.editing_memo_id:
+                memo = get_memo_by_id(st.session_state.editing_memo_id)
+                if memo:
+                    st.subheader("✏️ تعديل المذكرة")
+                    with st.form("edit_memo_form"):
+                        col1, col2 = st.columns(2)
+                        with col1:
+                            e_first_name = st.text_input("الاسم", value=memo["first_name"], key="e_first_name")
+                        with col2:
+                            e_last_name = st.text_input("اللقب", value=memo["last_name"], key="e_last_name")
+                        e_reg_num = st.text_input("رقم التسجيل", value=memo["reg_num"], key="e_reg_num")
+                        # تحويل النص إلى تاريخ
+                        try:
+                            e_birth_date_default = datetime.strptime(memo["birth_date"], "%Y-%m-%d").date()
+                        except Exception:
+                            e_birth_date_default = datetime.utcnow().date()
+                        e_birth_date = st.date_input("تاريخ الميلاد", value=e_birth_date_default, key="e_birth_date")
+                        e_section = st.selectbox("القسم", sections, index=sections.index(memo["section"]) if memo["section"] in sections else 0, key="e_section")
+
+                        # مشرف: اختر من القائمة
+                        conn = get_db_conn()
+                        cur = conn.cursor()
+                        cur.execute("SELECT username FROM users WHERE role = 'مشرف' ORDER BY username")
+                        supervisors_db = [r["username"] for r in cur.fetchall()]
+                        conn.close()
+                        supervisors_list = [""] + supervisors_db
+                        selected_index = supervisors_list.index(memo["supervisor"]) if memo["supervisor"] in supervisors_list else 0
+                        e_supervisor = st.selectbox("اسم المشرف", supervisors_list, index=selected_index, key="e_supervisor")
+
+                        e_title = st.text_input("عنوان المذكرة", value=memo["title"], key="e_title")
+                        e_file = st.file_uploader("استبدال ملف المذكرة (PDF فقط) - اتركه فارغاً إن لم تريد تغييره", type=["pdf"], key="e_file")
+                        submit_edit = st.form_submit_button("حفظ التعديلات")
+                    if submit_edit:
+                        # تعامل مع استبدال الملف إنّ وُجد
+                        new_file_name = memo["file_name"]
+                        new_file_path = memo["file_path"]
+                        if e_file is not None:
+                            # احذف القديم وحفظ الجديد
+                            try:
+                                if memo["file_path"] and os.path.exists(memo["file_path"]):
+                                    os.remove(memo["file_path"])
+                            except Exception:
+                                pass
+                            section_dir = UPLOAD_DIR / safe_filename(e_section)
+                            section_dir.mkdir(parents=True, exist_ok=True)
+                            new_file_name = f"{e_reg_num}_{safe_filename(e_file.name)}"
+                            new_file_path = str(section_dir / new_file_name)
+                            with open(new_file_path, "wb") as f:
+                                f.write(e_file.getbuffer())
+
+                        updated = {
+                            "reg_num": e_reg_num,
+                            "first_name": e_first_name,
+                            "last_name": e_last_name,
+                            "birth_date": e_birth_date.strftime("%Y-%m-%d"),
+                            "section": e_section,
+                            "supervisor": e_supervisor,
+                            "title": e_title,
+                            "file_name": new_file_name,
+                            "file_path": new_file_path
+                        }
+                        update_memo_db(memo["id"], updated)
+                        st.success("✅ تم حفظ التعديلات")
+                        # إنهاء وضع التحرير
+                        st.session_state.pop("editing_memo_id", None)
+                        st.experimental_rerun()
+
+            # خلاف ذلك (أو بعد الحذف/إتمام التعديل) نوفر نموذج إيداع جديد
+            st.subheader("📝 إيداع مذكرة جديدة")
+            with st.form("memo_form", clear_on_submit=True):
                 col1, col2 = st.columns(2)
                 with col1:
                     first_name = st.text_input("الاسم", key="first_name")
@@ -493,7 +661,6 @@ with st.container():
                 birth_date = st.date_input("تاريخ الميلاد", key="birth_date")
                 section = st.selectbox("القسم", sections, key="section")
 
-                # ===== استبدال حقل المشرف بحقل منسدِل من قاعدة المستخدمين (المشرفون) =====
                 conn = get_db_conn()
                 cur = conn.cursor()
                 cur.execute("SELECT username FROM users WHERE role = 'مشرف' ORDER BY username")
@@ -502,7 +669,6 @@ with st.container():
 
                 supervisor_options = [""] + supervisors_db
                 supervisor = st.selectbox("اسم المشرف", supervisor_options, key="supervisor")
-                # ======================================================================
 
                 title = st.text_input("عنوان المذكرة", key="title")
                 file = st.file_uploader("رفع ملف المذكرة (PDF فقط)", type=["pdf"], key="file")
@@ -513,7 +679,6 @@ with st.container():
                     if not all([reg_num, first_name, last_name, section, supervisor, title, file]):
                         st.error("⚠️ يرجى تعبئة جميع الحقول ورفع الملف. تأكد من اختيار المشرف من القائمة.")
                     else:
-                        # حفظ الملف
                         section_dir = UPLOAD_DIR / safe_filename(section)
                         section_dir.mkdir(parents=True, exist_ok=True)
                         filename = f"{reg_num}_{safe_filename(file.name)}"
@@ -540,6 +705,7 @@ with st.container():
                             try:
                                 save_memo_db(memo_data)
                                 st.success("✅ تم إيداع المذكرة بنجاح")
+                                st.experimental_rerun()
                             except Exception as e:
                                 st.error(f"فشل في حفظ بيانات المذكرة: {e}")
 
@@ -588,7 +754,7 @@ with st.container():
                             submit_reset = st.form_submit_button("تعيين كلمة المرور")
                         if submit_reset:
                             if not new_pwd:
-                                st.error("⚠️ أدخل كلمة مرور جديدة")
+                                st.error("⚠️ أدخل ��لمة مرور جديدة")
                             else:
                                 try:
                                     update_user_password(sel_student, new_pwd)
